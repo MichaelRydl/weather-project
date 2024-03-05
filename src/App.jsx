@@ -1,9 +1,13 @@
-import CardComponent from "./components/Card/CardComponent";
+import classes from "./App.module.css";
 
 function App() {
   return (
-    <div>
-      <CardComponent />
+    <div className={classes.app}>
+      <div className={classes.wrapper}>
+        <div className={classes.header}></div>
+        <div className={classes.main}></div>
+        <div className={classes.side}></div>
+      </div>
     </div>
   );
 }
