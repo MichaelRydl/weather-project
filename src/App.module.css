@@ -10,23 +10,20 @@
   height: 100%;
   display: grid;
   grid-template-columns: 3fr 1fr;
-  grid-template-rows: 2fr 10fr;
+  grid-template-rows: 1fr 11fr;
 }
 
 .header {
   grid-column: 1 / 3;
   grid-row: 1;
-  background-color: lightgray;
 }
 
 .main {
   grid-column: 1 / 2;
   grid-row: 2;
-  background-color: lightblue;
 }
 
 .side {
   grid-column: 2 / 3;
   grid-row: 2;
-  background-color: lightcyan;
 }
