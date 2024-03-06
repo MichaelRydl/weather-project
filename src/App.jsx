@@ -1,5 +1,7 @@
 import classes from "./App.module.css";
 import Header from "./components/Header/Header";
+import Main from "./components/Main/Main";
+import Side from "./components/Side/Side";
 import { Divider } from "@mantine/core";
 
 function App() {
@@ -10,8 +12,12 @@ function App() {
           <Header />
           <Divider my="md" />
         </div>
-        <div className={classes.main}></div>
-        <div className={classes.side}></div>
+        <div className={classes.main}>
+          <Main />
+        </div>
+        <div className={classes.side}>
+          <Side />
+        </div>
       </div>
     </div>
   );
