@@ -1,13 +1,16 @@
 import { Card, Flex, Text } from "@mantine/core";
 import classes from "./Main.module.css";
-import ClearDay from "../../assets/icons/line/clear-day.svg?react";
+import ClearDay from "../../assets/icons/clear-day.svg?react";
+import Cloudy from "../../assets/icons/cloudy.svg?react";
+import OvercastDay from "../../assets/icons/overcast-day.svg?react";
 import Sunrise from "../../assets/icons/line/sunrise.svg?react";
 import Sunset from "../../assets/icons/line/sunset.svg?react";
+import DayItem from "../DayItem/DayItem";
 
 function Main() {
   return (
-    <div className={classes.wrapper}>
-      <Card className={classes.card} shadow="sm" padding="lg" radius="md">
+    <Flex miw={"100%"} h={"100%"} gap="sm" wrap={"wrap"}>
+      <Card className={classes.card} shadow="sm" padding="lg" radius="xl">
         <div className={classes.card_overlay}>
           <Flex mih={"100%"} justify={"space-between"}>
             <Card.Section>
@@ -27,7 +30,7 @@ function Main() {
                   24°C
                 </Text>
               </Flex>
-              <Flex align={"end"} direction={"row"}>
+              <Flex align={"center"} direction={"row"}>
                 <Sunrise style={{ width: "2rem" }} />
                 <Text size={"sm"} c="white">
                   6:10 - 19:20
@@ -38,7 +41,34 @@ function Main() {
           </Flex>
         </div>
       </Card>
-    </div>
+      <Flex gap={"1rem"} wrap={"wrap"}>
+        <DayItem
+          temperature="20°C"
+          description="Overcast"
+          weatherIcon={<OvercastDay />}
+        />
+        <DayItem
+          temperature="21°C"
+          description="Sunny"
+          weatherIcon={<ClearDay />}
+        />
+        <DayItem
+          temperature="21°C"
+          description="Sunny"
+          weatherIcon={<ClearDay />}
+        />
+        <DayItem
+          temperature="24°C"
+          description="Sunny"
+          weatherIcon={<ClearDay />}
+        />
+        <DayItem
+          temperature="21°C"
+          description="Cloudy"
+          weatherIcon={<Cloudy />}
+        />
+      </Flex>
+    </Flex>
   );
 }
 

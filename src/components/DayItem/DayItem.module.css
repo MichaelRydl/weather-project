@@ -1,0 +1,23 @@
+.wrapper {
+  width: fit-content;
+}
+
+.weather_icon {
+  width: 4rem;
+  height: 4rem;
+}
+
+.weather_icon_pressure {
+  width: 2rem;
+  height: 2rem;
+}
+
+.weather_temperature {
+  padding: 0.1rem 0.4rem;
+  background: linear-gradient(
+    90deg,
+    var(--mantine-color-blue-filled) 0%,
+    var(--mantine-color-cyan-filled) 100%
+  );
+  border-radius: 8px;
+}
