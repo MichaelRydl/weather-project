@@ -1,0 +1,32 @@
+.wrapper {
+  width: 100%;
+  height: 100%;
+  background-color: rgba(243, 242, 242, 0.4);
+  border-radius: 8px;
+  overflow: auto;
+}
+
+.weather_icon {
+  width: 3rem;
+  height: 3rem;
+}
+
+.city_box {
+  width: 100%;
+  height: 15%;
+  position: relative;
+  background-image: url("../../assets/images/background.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.city_box_overlay {
+  padding: 4px 16px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+}

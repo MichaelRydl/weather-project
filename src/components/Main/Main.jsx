@@ -67,6 +67,11 @@ function Main() {
           description="Cloudy"
           weatherIcon={<Cloudy />}
         />
+        <DayItem
+          temperature="19°C"
+          description="Cloudy"
+          weatherIcon={<Cloudy />}
+        />
       </Flex>
     </Flex>
   );
