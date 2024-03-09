@@ -74,7 +74,13 @@ function Header() {
           color="black"
           aria-label="Toggle color scheme"
         >
-          <IconSettings stroke={1.5} />
+          <IconSettings
+            stroke={1.5}
+            className={cx(
+              classes.icon,
+              computedColorScheme === "light" ? classes.dark : classes.light
+            )}
+          />
         </ActionIcon>
         <ActionIcon
           onClick={() =>

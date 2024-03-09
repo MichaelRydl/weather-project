@@ -45,5 +45,6 @@
 
   @mixin dark {
     display: block;
+    color: lightgray;
   }
 }
