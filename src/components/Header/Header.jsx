@@ -14,6 +14,7 @@ import {
   IconMoon,
   IconSettings,
   IconSearch,
+  IconCurrentLocation,
 } from "@tabler/icons-react";
 import cx from "clsx";
 import classes from "./Header.module.css";
@@ -64,10 +65,24 @@ function Header() {
       </div>
       <Flex w="100%" gap="xs" align="center" justify="center">
         <TextInput
+          className={classes.header_search_input}
           radius="xl"
           size="sm"
           placeholder="Search city"
-          className={classes.header_search_input}
+          leftSection={
+            <ActionIcon
+              variant="subtle"
+              size="input-sm"
+              radius="xl"
+              color="gray"
+              aria-label="Search"
+            >
+              <IconCurrentLocation
+                style={{ width: "1.1rem", height: "1.1rem" }}
+                stroke={1.5}
+              />
+            </ActionIcon>
+          }
         />
         <ActionIcon
           variant="light"
