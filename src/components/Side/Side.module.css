@@ -29,4 +29,10 @@
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.7);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.city_box_overlay:hover {
+  background-color: rgba(0, 0, 0, 0.8);
 }

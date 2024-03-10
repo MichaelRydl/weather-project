@@ -26,3 +26,15 @@
   grid-column: 2 / 3;
   grid-row: 2;
 }
+
+.dark {
+  @mixin light {
+    background-color: rgba(243, 242, 242, 0.4);
+  }
+}
+
+.light {
+  @mixin dark {
+    background-color: #333;
+  }
+}
