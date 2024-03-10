@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import {
   ActionIcon,
+  Flex,
+  Menu,
+  SegmentedControl,
   Text,
   TextInput,
   useMantineColorScheme,
   useComputedColorScheme,
-  rem,
 } from "@mantine/core";
 import {
   IconSun,
@@ -28,7 +30,6 @@ function Header() {
   const computedColorScheme = useComputedColorScheme("light", {
     getInitialValueInEffect: true,
   });
-  const searchIcon = <IconSearch style={{ width: rem(16), height: rem(16) }} />;
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -61,27 +62,55 @@ function Header() {
         </Text>
         {logoIcons()}
       </div>
-      <TextInput
-        className={classes.header_search}
-        rightSection={searchIcon}
-        radius="xl"
-        placeholder="Search city"
-      />
-      <div className={classes.header_buttons}>
+      <Flex w="100%" gap="xs" align="center" justify="center">
+        <TextInput
+          radius="xl"
+          size="sm"
+          placeholder="Search city"
+          className={classes.header_search_input}
+        />
         <ActionIcon
-          variant="subtle"
-          size="xl"
-          color="black"
-          aria-label="Toggle color scheme"
+          variant="light"
+          size="input-sm"
+          radius="xl"
+          color="gray"
+          aria-label="Search"
         >
-          <IconSettings
+          <IconSearch
+            style={{ width: "1.1rem", height: "1.1rem" }}
             stroke={1.5}
-            className={cx(
-              classes.icon,
-              computedColorScheme === "light" ? classes.dark : classes.light
-            )}
           />
         </ActionIcon>
+      </Flex>
+      <div className={classes.header_buttons}>
+        <Menu shadow="md" width={300} position="bottom-end">
+          <Menu.Target>
+            <ActionIcon
+              variant="subtle"
+              size="xl"
+              color="black"
+              aria-label="Toggle color scheme"
+            >
+              <IconSettings
+                stroke={1.5}
+                className={cx(
+                  classes.icon,
+                  computedColorScheme === "light" ? classes.dark : classes.light
+                )}
+              />
+            </ActionIcon>
+          </Menu.Target>
+          <Menu.Dropdown>
+            <Menu.Label>Temperature:</Menu.Label>
+            <SegmentedControl radius="sm" data={["ºC", "ºF"]} fullWidth />
+            <Menu.Label>Units of measurement:</Menu.Label>
+            <SegmentedControl
+              radius="sm"
+              data={["standard", "metric", "imperial"]}
+              fullWidth
+            />
+          </Menu.Dropdown>
+        </Menu>
         <ActionIcon
           onClick={() =>
             setColorScheme(computedColorScheme === "light" ? "dark" : "light")
