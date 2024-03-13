@@ -1,15 +1,15 @@
-import classes from "./App.module.css";
-import Header from "./components/Header/Header";
-import Main from "./components/Main/Main";
-import Side from "./components/Side/Side";
 import cx from "clsx";
 import {
   Divider,
   MantineThemeProvider,
   useComputedColorScheme,
 } from "@mantine/core";
+import classes from "./App.module.css";
+import Header from "./components/Header/Header";
+import Main from "./components/Main/Main";
+import Side from "./components/Side/Side";
 
-function App() {
+const App = () => {
   const computedColorScheme = useComputedColorScheme("light", {
     getInitialValueInEffect: true,
   });
@@ -37,6 +37,6 @@ function App() {
       </div>
     </MantineThemeProvider>
   );
-}
+};
 
 export default App;

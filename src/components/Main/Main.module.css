@@ -38,9 +38,8 @@
 }
 
 .weather_icon {
-  width: 40%;
-  height: auto;
-  margin: 1rem;
+  width: 10rem;
+  height: 10rem;
 }
 
 .info {

@@ -1,75 +1,62 @@
+import { useEffect } from "react";
 import { Divider, Flex, Text } from "@mantine/core";
-import ClearDay from "../../assets/icons/clear-day.svg?react";
-import Cloudy from "../../assets/icons/cloudy.svg?react";
-import OvercastDay from "../../assets/icons/overcast-day.svg?react";
+import { useRecoilState, useRecoilValue } from "recoil";
+import {
+  favouriteLocationsState,
+  geoDataListState,
+  weatherDataListState,
+} from "../../state/atoms";
+import { fetchWeatherData, kelvinToCelsius } from "../../utils/utils";
 import classes from "./Side.module.css";
 
 const Side = () => {
+  const favouriteLocations = useRecoilValue(favouriteLocationsState);
+  const [geoListData, setGeoListData] = useRecoilState(geoDataListState);
+  const [weatherListData, setWeatherListData] =
+    useRecoilState(weatherDataListState);
+
+  const getIconUrl = (icon) => {
+    return new URL(
+      `../../assets/icons/openweathermap/${icon}.svg`,
+      import.meta.url
+    ).href;
+  };
+
+  useEffect(() => {
+    favouriteLocations.forEach((location) => {
+      fetchWeatherData(location, setGeoListData, setWeatherListData);
+    });
+  }, [favouriteLocations, setGeoListData, setWeatherListData]);
+
   return (
     <div className={classes.wrapper}>
-      <div className={classes.city_box}>
-        <div className={classes.city_box_overlay}>
-          <Flex mih={"100%"} justify={"space-between"}>
-            <ClearDay className={classes.weather_icon} />
-            <Flex align={"end"} direction={"column"}>
-              <Text className={classes.city_text} size={"md"} c="white">
-                Paris, FR
-              </Text>
-              <Text size={"2.5rem"} c="white">
-                24°C
-              </Text>
-            </Flex>
-          </Flex>
-        </div>
-      </div>
-      <Divider />
-      <div className={classes.city_box}>
-        <div className={classes.city_box_overlay}>
-          <Flex mih={"100%"} justify={"space-between"}>
-            <ClearDay className={classes.weather_icon} />
-            <Flex align={"end"} direction={"column"}>
-              <Text className={classes.city_text} size={"md"} c="white">
-                London, GB
-              </Text>
-              <Text size={"2.5rem"} c="white">
-                18°C
-              </Text>
-            </Flex>
-          </Flex>
-        </div>
-      </div>
-      <Divider />
-      <div className={classes.city_box}>
-        <div className={classes.city_box_overlay}>
-          <Flex mih={"100%"} justify={"space-between"}>
-            <Cloudy className={classes.weather_icon} />
-            <Flex align={"end"} direction={"column"}>
-              <Text className={classes.city_text} size={"md"} c="white">
-                Rome, IT
-              </Text>
-              <Text size={"2.5rem"} c="white">
-                20°C
-              </Text>
-            </Flex>
-          </Flex>
-        </div>
-      </div>
-      <Divider />
-      <div className={classes.city_box}>
-        <div className={classes.city_box_overlay}>
-          <Flex mih={"100%"} justify={"space-between"}>
-            <OvercastDay className={classes.weather_icon} />
-            <Flex align={"end"} direction={"column"}>
-              <Text className={classes.city_text} size={"md"} c="white">
-                New York, US
-              </Text>
-              <Text size={"2.5rem"} c="white">
-                24°C
-              </Text>
-            </Flex>
-          </Flex>
-        </div>
-      </div>
+      {geoListData?.map((data, i) => (
+        <>
+          <div className={classes.city_box}>
+            <div className={classes.city_box_overlay}>
+              <Flex mih={"100%"} justify={"space-between"}>
+                <img
+                  className={classes.weather_icon}
+                  src={getIconUrl(weatherListData[i]?.current?.weather[0].icon)}
+                  alt=""
+                />
+                <Flex align={"end"} direction={"column"}>
+                  <Text className={classes.city_text} size={"md"} c="white">
+                    {data?.name}
+                  </Text>
+                  <Text size={"2.5rem"} c="white">
+                    {Math.round(
+                      kelvinToCelsius(weatherListData[i]?.current?.temp)
+                    )}
+                    <sup style={{ fontSize: "1rem" }}>°C</sup>
+                  </Text>
+                </Flex>
+              </Flex>
+            </div>
+          </div>
+          <Divider />
+        </>
+      ))}
     </div>
   );
 };

@@ -16,11 +16,13 @@
     "@mantine/form": "^7.6.1",
     "@mantine/hooks": "^7.6.1",
     "@tabler/icons-react": "^2.47.0",
+    "axios": "^1.6.7",
     "clsx": "^2.1.0",
     "dayjs": "^1.11.10",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "recharts": "^2.12.2",
+    "recoil": "^0.7.7",
     "vite-plugin-svgr": "^4.2.0"
   },
   "devDependencies": {
