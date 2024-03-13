@@ -1,53 +1,65 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useRecoilValue } from "recoil";
 import { Divider, Flex, Text } from "@mantine/core";
-import { useRecoilState, useRecoilValue } from "recoil";
-import {
-  favouriteLocationsState,
-  geoDataListState,
-  weatherDataListState,
-} from "../../state/atoms";
-import { fetchWeatherData, kelvinToCelsius } from "../../utils/utils";
+import { kelvinToCelsius } from "../../utils/utils";
+import { favouriteLocationsState } from "../../state/atoms";
+import axios from "axios";
 import classes from "./Side.module.css";
 
-const Side = () => {
-  const favouriteLocations = useRecoilValue(favouriteLocationsState);
-  const [geoListData, setGeoListData] = useRecoilState(geoDataListState);
-  const [weatherListData, setWeatherListData] =
-    useRecoilState(weatherDataListState);
+const API_KEY = import.meta.env.VITE_OPEN_WEATHER_API_KEY;
 
-  const getIconUrl = (icon) => {
-    return new URL(
-      `../../assets/icons/openweathermap/${icon}.svg`,
-      import.meta.url
-    ).href;
-  };
+const Side = () => {
+  const locations = useRecoilValue(favouriteLocationsState);
+  const [currentLocationData, setCurrentLocationData] = useState([]);
 
   useEffect(() => {
-    favouriteLocations.forEach((location) => {
-      fetchWeatherData(location, setGeoListData, setWeatherListData);
+    locations.forEach((location) => {
+      const fetchWeatherData = async () => {
+        try {
+          const geoResponse = await axios.get(
+            `https://api.openweathermap.org/geo/1.0/direct?q=${location}&appid=${API_KEY}`
+          );
+
+          const { lat, lon } = geoResponse.data[0];
+          const weatherResponse = await axios.get(
+            `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${API_KEY}`
+          );
+
+          setCurrentLocationData((prevState) => [
+            ...prevState,
+            {
+              favouriteLocation: location,
+              geoData: geoResponse.data[0],
+              weatherData: weatherResponse.data,
+            },
+          ]);
+        } catch (error) {
+          console.error(error);
+        }
+      };
+
+      fetchWeatherData();
     });
-  }, [favouriteLocations, setGeoListData, setWeatherListData]);
+  }, [locations]);
 
   return (
     <div className={classes.wrapper}>
-      {geoListData?.map((data, i) => (
+      {currentLocationData.map(({ geoData, weatherData }) => (
         <>
           <div className={classes.city_box}>
             <div className={classes.city_box_overlay}>
               <Flex mih={"100%"} justify={"space-between"}>
                 <img
                   className={classes.weather_icon}
-                  src={getIconUrl(weatherListData[i]?.current?.weather[0].icon)}
+                  src={`/icons/openweathermap/${weatherData.current.weather[0].icon}.svg`}
                   alt=""
                 />
                 <Flex align={"end"} direction={"column"}>
                   <Text className={classes.city_text} size={"md"} c="white">
-                    {data?.name}
+                    {`${geoData.name}, ${geoData.country}`}
                   </Text>
                   <Text size={"2.5rem"} c="white">
-                    {Math.round(
-                      kelvinToCelsius(weatherListData[i]?.current?.temp)
-                    )}
+                    {Math.round(kelvinToCelsius(weatherData.current.temp))}
                     <sup style={{ fontSize: "1rem" }}>°C</sup>
                   </Text>
                 </Flex>

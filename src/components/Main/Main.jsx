@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { Card, Flex, Loader, Text, Paper } from "@mantine/core";
 import { convertUnixTimestampToTime, kelvinToCelsius } from "../../utils/utils";
+import axios from "axios";
 import classes from "./Main.module.css";
 import ClearDay from "../../assets/icons/clear-day.svg?react";
 import Cloudy from "../../assets/icons/openweathermap/04d.svg?react";
@@ -14,7 +15,8 @@ import {
   weatherDataState,
   weatherLocationState,
 } from "../../state/atoms";
-import { fetchWeatherData } from "../../utils/utils";
+
+const API_KEY = import.meta.env.VITE_OPEN_WEATHER_API_KEY;
 
 const Main = () => {
   const location = useRecoilValue(weatherLocationState);
@@ -22,15 +24,25 @@ const Main = () => {
   const [weatherData, setWeatherData] = useRecoilState(weatherDataState);
 
   useEffect(() => {
-    fetchWeatherData(location, setGeoData, setWeatherData);
-  }, [location, setGeoData, setWeatherData]);
+    const fetchWeatherData = async () => {
+      try {
+        const geoResponse = await axios.get(
+          `https://api.openweathermap.org/geo/1.0/direct?q=${location}&appid=${API_KEY}`
+        );
+        setGeoData(geoResponse.data[0]);
 
-  const getIconUrl = (icon) => {
-    return new URL(
-      `../../assets/icons/openweathermap/${icon}.svg`,
-      import.meta.url
-    ).href;
-  };
+        const { lat, lon } = geoResponse.data[0];
+        const weatherResponse = await axios.get(
+          `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${API_KEY}`
+        );
+        setWeatherData(weatherResponse.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchWeatherData();
+  }, [location, setGeoData, setWeatherData]);
 
   return (
     <div className={classes.wrapper}>
@@ -47,7 +59,7 @@ const Main = () => {
                 <Card.Section>
                   <img
                     className={classes.weather_icon}
-                    src={getIconUrl(weatherData.current.weather[0].icon)}
+                    src={`/icons/openweathermap/${weatherData.current.weather[0].icon}.svg`}
                     alt=""
                   />
                 </Card.Section>
