@@ -77,7 +77,6 @@ const Main = () => {
             >
               <ActionIcon
                 variant="light"
-                size="input-sm"
                 radius="xl"
                 color="white"
                 aria-label="Add to favourites"

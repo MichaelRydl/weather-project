@@ -33,6 +33,18 @@
   transition: all 0.2s ease-in-out;
 }
 
+.remove_icon_wrapper_hidden {
+  position: absolute;
+  bottom: 1px;
+  right: 5px;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
 .city_box_overlay:hover {
   background-color: rgba(0, 0, 0, 0.8);
+}
+
+.city_box_overlay:hover .remove_icon_wrapper_hidden {
+  opacity: 1;
 }

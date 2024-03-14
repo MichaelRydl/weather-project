@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { useSetRecoilState, useRecoilValue } from "recoil";
-import { Divider, Flex, Text } from "@mantine/core";
+import { useRecoilState, useSetRecoilState } from "recoil";
+import { ActionIcon, Divider, Flex, Text } from "@mantine/core";
+import { IconMinus } from "@tabler/icons-react";
 import { kelvinToCelsius } from "../../utils/utils";
 import {
   favouriteLocationsState,
@@ -13,7 +14,9 @@ const API_KEY = import.meta.env.VITE_OPEN_WEATHER_API_KEY;
 
 const Side = () => {
   const setLocation = useSetRecoilState(weatherLocationState);
-  const favouriteLocations = useRecoilValue(favouriteLocationsState);
+  const [favouriteLocations, setFavouriteLocations] = useRecoilState(
+    favouriteLocationsState
+  );
   const [currentLocationData, setCurrentLocationData] = useState([]);
 
   useEffect(() => {
@@ -50,9 +53,18 @@ const Side = () => {
     setLocation(location);
   };
 
+  const removeItem = (indexToRemove) => {
+    setCurrentLocationData((prevItems) => {
+      return prevItems.filter((_item, index) => index !== indexToRemove);
+    });
+    setFavouriteLocations((prevItems) => {
+      return prevItems.filter((_item, index) => index !== indexToRemove);
+    });
+  };
+
   return (
     <div className={classes.wrapper}>
-      {currentLocationData.map(({ geoData, weatherData }) => (
+      {currentLocationData.map(({ geoData, weatherData }, i) => (
         <>
           <div
             className={classes.city_box}
@@ -75,6 +87,23 @@ const Side = () => {
                   </Text>
                 </Flex>
               </Flex>
+              <div
+                className={classes.remove_icon_wrapper_hidden}
+                onClick={() => removeItem(i)}
+              >
+                <ActionIcon
+                  variant="filled"
+                  radius="xl"
+                  color="red"
+                  aria-label="Remove item"
+                  size="xs"
+                >
+                  <IconMinus
+                    style={{ width: "1rem", height: "1rem" }}
+                    stroke={1.5}
+                  />
+                </ActionIcon>
+              </div>
             </div>
           </div>
           <Divider />
