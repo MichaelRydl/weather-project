@@ -12,6 +12,8 @@ import Header from "./components/Header/Header";
 import Main from "./components/Main/Main";
 import Side from "./components/Side/Side";
 
+const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+
 const App = () => {
   const setLocation = useSetRecoilState(weatherLocationState);
 
@@ -20,15 +22,24 @@ const App = () => {
   });
 
   useEffect(() => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        setLocation({
-          lat: position.coords.latitude,
-          lon: position.coords.longitude,
-        });
-      });
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(showCity);
     } else {
-      throw new Error("Geolocation service is not available.");
+      console.log("Geolocation is not supported by this browser.");
+    }
+
+    function showCity(position) {
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${API_KEY}`;
+
+      fetch(url)
+        .then((response) => response.json())
+        .then((data) => {
+          const city = data.results[0].address_components[4].long_name;
+          setLocation(city);
+        })
+        .catch((error) => console.log(error));
     }
   }, []);
 

@@ -26,10 +26,13 @@ import Snow from "../../assets/icons/snow.svg?react";
 import LigtningBolt from "../../assets/icons/lightning-bolt.svg?react";
 import { weatherLocationState } from "../../state/atoms";
 
+const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+
 const Header = () => {
   const icons = [ClearDay, Cloudy, Rain, Snow, LigtningBolt];
   const setLocation = useSetRecoilState(weatherLocationState);
   const [logoIcon, setLogoIcon] = useState(0);
+  const [searchedLocation, setSearchedLocation] = useState("");
   const { setColorScheme } = useMantineColorScheme();
   const computedColorScheme = useComputedColorScheme("light", {
     getInitialValueInEffect: true,
@@ -59,16 +62,34 @@ const Header = () => {
   };
 
   const getCurrentLocation = () => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        setLocation({
-          lat: position.coords.latitude,
-          lon: position.coords.longitude,
-        });
-      });
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(showCity);
     } else {
-      throw new Error("Geolocation service is not available.");
+      console.log("Geolocation is not supported by this browser.");
     }
+
+    function showCity(position) {
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${API_KEY}`;
+
+      fetch(url)
+        .then((response) => response.json())
+        .then((data) => {
+          const city = data.results[0].address_components[4].long_name;
+          setLocation(city);
+        })
+        .catch((error) => console.log(error));
+    }
+  };
+
+  const handleSearchLocation = (locationValue) => {
+    setSearchedLocation(locationValue);
+  };
+
+  const handleSetLocation = () => {
+    setLocation(searchedLocation);
+    setSearchedLocation("");
   };
 
   return (
@@ -85,6 +106,8 @@ const Header = () => {
           radius="xl"
           size="sm"
           placeholder="Search city"
+          onChange={(ev) => handleSearchLocation(ev.target.value)}
+          value={searchedLocation}
           leftSection={
             <ActionIcon
               variant="subtle"
@@ -107,6 +130,7 @@ const Header = () => {
           radius="xl"
           color="gray"
           aria-label="Search"
+          onClick={handleSetLocation}
         >
           <IconSearch
             style={{ width: "1.1rem", height: "1.1rem" }}

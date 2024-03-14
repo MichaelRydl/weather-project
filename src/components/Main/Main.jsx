@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { ActionIcon, Card, Flex, Loader, Text, Paper } from "@mantine/core";
 import { IconStar } from "@tabler/icons-react";
-import { convertUnixTimestampToTime, kelvinToCelsius } from "../../utils/utils";
+import { convertUnixTimestampToTime } from "../../utils/utils";
 import axios from "axios";
 import classes from "./Main.module.css";
 import ClearDay from "../../assets/icons/clear-day.svg?react";
@@ -12,7 +12,6 @@ import Sunrise from "../../assets/icons/line/sunrise.svg?react";
 import Sunset from "../../assets/icons/line/sunset.svg?react";
 import DayItem from "../DayItem/DayItem";
 import {
-  geoDataState,
   favouriteLocationsState,
   weatherDataState,
   weatherLocationState,
@@ -25,39 +24,34 @@ const Main = () => {
   const [favouriteLocations, setFavouriteLocations] = useRecoilState(
     favouriteLocationsState
   );
-  const [geoData, setGeoData] = useRecoilState(geoDataState);
   const [weatherData, setWeatherData] = useRecoilState(weatherDataState);
 
   useEffect(() => {
     const fetchWeatherData = async () => {
       try {
-        const { lat, lon } = location;
-
-        const geoResponse = await axios.get(
-          `http://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&appid=${API_KEY}`
-        );
-        setGeoData(geoResponse.data[0]);
-
         const weatherResponse = await axios.get(
-          `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${API_KEY}`
+          `https://api.openweathermap.org/data/2.5/weather?q=${location}&units=metric&appid=${API_KEY}`
         );
         setWeatherData(weatherResponse.data);
+        console.log(weatherResponse.data);
       } catch (error) {
         console.error(error);
       }
     };
 
     fetchWeatherData();
-  }, [location, setGeoData, setWeatherData]);
+  }, [location, setWeatherData]);
 
   const addFavouriteLocation = () => {
-    if (favouriteLocations.some((location) => location.name === geoData.name)) {
-      return alert(`${geoData.name} is already in the favourite list.`);
+    if (
+      favouriteLocations.some((location) => location.name === weatherData.name)
+    ) {
+      return alert(`${weatherData.name} is already in the favourite list.`);
     }
 
     setFavouriteLocations((prevState) => [
       ...prevState,
-      { name: geoData.name, country: geoData.country },
+      { name: weatherData.name, country: weatherData.sys.country },
     ]);
   };
 
@@ -87,12 +81,12 @@ const Main = () => {
                 />
               </ActionIcon>
             </div>
-            {geoData && weatherData.current ? (
+            {weatherData.sys ? (
               <Flex mih="100%" justify="space-between">
                 <Card.Section>
                   <img
                     className={classes.weather_icon}
-                    src={`/icons/openweathermap/${weatherData.current.weather[0].icon}.svg`}
+                    src={`/icons/openweathermap/${weatherData.weather[0].icon}.svg`}
                     alt=""
                   />
                 </Card.Section>
@@ -104,10 +98,10 @@ const Main = () => {
                 >
                   <Flex align="end" direction="column">
                     <Text className={classes.city_text} size="lg" c="white">
-                      {`${geoData.name}, ${geoData.country}`}
+                      {`${weatherData.name}, ${weatherData.sys.country}`}
                     </Text>
                     <Text size="4rem" c="white">
-                      {Math.round(kelvinToCelsius(weatherData.current.temp))}
+                      {Math.round(weatherData.main.temp)}
                       <sup style={{ fontSize: "2rem" }}>°C</sup>
                     </Text>
                   </Flex>
@@ -115,9 +109,9 @@ const Main = () => {
                     <Sunrise style={{ width: "2rem" }} />
                     <Text size="sm" c="white">
                       {`${convertUnixTimestampToTime(
-                        weatherData.current.sunrise
+                        weatherData.sys.sunrise
                       )} - ${convertUnixTimestampToTime(
-                        weatherData.current.sunset
+                        weatherData.sys.sunset
                       )}`}
                     </Text>
                     <Sunset style={{ width: "2rem" }} />
