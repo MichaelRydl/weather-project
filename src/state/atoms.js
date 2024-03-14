@@ -22,10 +22,10 @@ export const weatherDataListState = atom({
 
 export const weatherLocationState = atom({
   key: "weatherLocationState",
-  default: "Prague",
+  default: null,
 });
 
 export const favouriteLocationsState = atom({
   key: "favouriteLocationsState",
-  default: ["Olomouc", "Prague", "Madrid"],
+  default: [],
 });

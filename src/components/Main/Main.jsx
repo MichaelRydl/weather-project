@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
-import { Card, Flex, Loader, Text, Paper } from "@mantine/core";
+import { ActionIcon, Card, Flex, Loader, Text, Paper } from "@mantine/core";
+import { IconStar } from "@tabler/icons-react";
 import { convertUnixTimestampToTime, kelvinToCelsius } from "../../utils/utils";
 import axios from "axios";
 import classes from "./Main.module.css";
@@ -12,6 +13,7 @@ import Sunset from "../../assets/icons/line/sunset.svg?react";
 import DayItem from "../DayItem/DayItem";
 import {
   geoDataState,
+  favouriteLocationsState,
   weatherDataState,
   weatherLocationState,
 } from "../../state/atoms";
@@ -20,18 +22,22 @@ const API_KEY = import.meta.env.VITE_OPEN_WEATHER_API_KEY;
 
 const Main = () => {
   const location = useRecoilValue(weatherLocationState);
+  const [favouriteLocations, setFavouriteLocations] = useRecoilState(
+    favouriteLocationsState
+  );
   const [geoData, setGeoData] = useRecoilState(geoDataState);
   const [weatherData, setWeatherData] = useRecoilState(weatherDataState);
 
   useEffect(() => {
     const fetchWeatherData = async () => {
       try {
+        const { lat, lon } = location;
+
         const geoResponse = await axios.get(
-          `https://api.openweathermap.org/geo/1.0/direct?q=${location}&appid=${API_KEY}`
+          `http://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&appid=${API_KEY}`
         );
         setGeoData(geoResponse.data[0]);
 
-        const { lat, lon } = geoResponse.data[0];
         const weatherResponse = await axios.get(
           `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${API_KEY}`
         );
@@ -44,6 +50,17 @@ const Main = () => {
     fetchWeatherData();
   }, [location, setGeoData, setWeatherData]);
 
+  const addFavouriteLocation = () => {
+    if (favouriteLocations.some((location) => location.name === geoData.name)) {
+      return alert(`${geoData.name} is already in the favourite list.`);
+    }
+
+    setFavouriteLocations((prevState) => [
+      ...prevState,
+      { name: geoData.name, country: geoData.country },
+    ]);
+  };
+
   return (
     <div className={classes.wrapper}>
       <div className={classes.wrapper_main_info}>
@@ -54,6 +71,23 @@ const Main = () => {
           radius="xl"
         >
           <div className={classes.card_overlay}>
+            <div
+              className={classes.favourite_icon_wrapper}
+              onClick={addFavouriteLocation}
+            >
+              <ActionIcon
+                variant="light"
+                size="input-sm"
+                radius="xl"
+                color="white"
+                aria-label="Add to favourites"
+              >
+                <IconStar
+                  style={{ width: "1.1rem", height: "1.1rem" }}
+                  stroke={1.5}
+                />
+              </ActionIcon>
+            </div>
             {geoData && weatherData.current ? (
               <Flex mih="100%" justify="space-between">
                 <Card.Section>

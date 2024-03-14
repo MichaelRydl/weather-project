@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSetRecoilState } from "recoil";
 import {
   ActionIcon,
   Flex,
@@ -23,9 +24,11 @@ import Cloudy from "../../assets/icons/cloudy.svg?react";
 import Rain from "../../assets/icons/rain.svg?react";
 import Snow from "../../assets/icons/snow.svg?react";
 import LigtningBolt from "../../assets/icons/lightning-bolt.svg?react";
+import { weatherLocationState } from "../../state/atoms";
 
-function Header() {
+const Header = () => {
   const icons = [ClearDay, Cloudy, Rain, Snow, LigtningBolt];
+  const setLocation = useSetRecoilState(weatherLocationState);
   const [logoIcon, setLogoIcon] = useState(0);
   const { setColorScheme } = useMantineColorScheme();
   const computedColorScheme = useComputedColorScheme("light", {
@@ -55,6 +58,19 @@ function Header() {
     }
   };
 
+  const getCurrentLocation = () => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        setLocation({
+          lat: position.coords.latitude,
+          lon: position.coords.longitude,
+        });
+      });
+    } else {
+      throw new Error("Geolocation service is not available.");
+    }
+  };
+
   return (
     <div className={classes.header}>
       <div className={classes.logo}>
@@ -75,7 +91,8 @@ function Header() {
               size="input-sm"
               radius="xl"
               color="gray"
-              aria-label="Search"
+              aria-label="Current location"
+              onClick={getCurrentLocation}
             >
               <IconCurrentLocation
                 style={{ width: "1.1rem", height: "1.1rem" }}
@@ -141,6 +158,6 @@ function Header() {
       </div>
     </div>
   );
-}
+};
 
 export default Header;
