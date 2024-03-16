@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useRecoilState, useSetRecoilState } from "recoil";
 import { ActionIcon, Divider, Flex, Text } from "@mantine/core";
 import { IconMinus } from "@tabler/icons-react";
-import { kelvinToCelsius } from "../../utils/utils";
 import {
   favouriteLocationsState,
   weatherLocationState,
@@ -20,40 +19,40 @@ const Side = () => {
   const [currentLocationData, setCurrentLocationData] = useState([]);
 
   useEffect(() => {
-    favouriteLocations.forEach((location) => {
-      const fetchWeatherData = async () => {
-        try {
-          const geoResponse = await axios.get(
-            `https://api.openweathermap.org/geo/1.0/direct?q=${location.name}&appid=${API_KEY}`
+    const fetchWeatherData = async (location) => {
+      try {
+        const weatherResponse = await axios.get(
+          `https://api.openweathermap.org/data/2.5/weather?q=${location.name}&units=metric&appid=${API_KEY}`
+        );
+        setCurrentLocationData((prevState) => {
+          const filteredData = prevState.filter(
+            (item) => item.favouriteLocation !== location.name
           );
-
-          const { lat, lon } = geoResponse.data[0];
-          const weatherResponse = await axios.get(
-            `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${API_KEY}`
-          );
-
-          setCurrentLocationData((prevState) => [
-            ...prevState,
+          return [
+            ...filteredData,
             {
               favouriteLocation: location.name,
-              geoData: geoResponse.data[0],
               weatherData: weatherResponse.data,
             },
-          ]);
-        } catch (error) {
-          console.error(error);
-        }
-      };
+          ];
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
-      fetchWeatherData();
-    });
+    if (favouriteLocations.length > 0) {
+      fetchWeatherData(favouriteLocations[favouriteLocations.length - 1]);
+    }
   }, [favouriteLocations]);
 
   const handleWeatherItemClick = (location) => {
     setLocation(location);
   };
 
-  const removeItem = (indexToRemove) => {
+  const removeItem = (ev, indexToRemove) => {
+    ev.stopPropagation();
+
     setCurrentLocationData((prevItems) => {
       return prevItems.filter((_item, index) => index !== indexToRemove);
     });
@@ -64,32 +63,32 @@ const Side = () => {
 
   return (
     <div className={classes.wrapper}>
-      {currentLocationData.map(({ geoData, weatherData }, i) => (
-        <>
+      {currentLocationData?.map(({ weatherData }, i) => (
+        <span key={i}>
           <div
             className={classes.city_box}
-            onClick={() => handleWeatherItemClick(geoData.name)}
+            onClick={() => handleWeatherItemClick(weatherData.name)}
           >
             <div className={classes.city_box_overlay}>
               <Flex mih={"100%"} justify={"space-between"}>
                 <img
                   className={classes.weather_icon}
-                  src={`/icons/openweathermap/${weatherData.current.weather[0].icon}.svg`}
+                  src={`/icons/openweathermap/${weatherData.weather[0].icon}.svg`}
                   alt=""
                 />
                 <Flex align={"end"} direction={"column"}>
                   <Text className={classes.city_text} size={"md"} c="white">
-                    {`${geoData.name}, ${geoData.country}`}
+                    {`${weatherData.name}, ${weatherData.sys.country}`}
                   </Text>
                   <Text size={"2.5rem"} c="white">
-                    {Math.round(kelvinToCelsius(weatherData.current.temp))}
+                    {Math.round(weatherData.main.temp)}
                     <sup style={{ fontSize: "1rem" }}>°C</sup>
                   </Text>
                 </Flex>
               </Flex>
               <div
                 className={classes.remove_icon_wrapper_hidden}
-                onClick={() => removeItem(i)}
+                onClick={(ev) => removeItem(ev, i)}
               >
                 <ActionIcon
                   variant="filled"
@@ -107,7 +106,7 @@ const Side = () => {
             </div>
           </div>
           <Divider />
-        </>
+        </span>
       ))}
     </div>
   );

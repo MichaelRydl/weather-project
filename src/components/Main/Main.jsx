@@ -33,13 +33,12 @@ const Main = () => {
           `https://api.openweathermap.org/data/2.5/weather?q=${location}&units=metric&appid=${API_KEY}`
         );
         setWeatherData(weatherResponse.data);
-        console.log(weatherResponse.data);
       } catch (error) {
         console.error(error);
       }
     };
 
-    fetchWeatherData();
+    location && fetchWeatherData();
   }, [location, setWeatherData]);
 
   const addFavouriteLocation = () => {

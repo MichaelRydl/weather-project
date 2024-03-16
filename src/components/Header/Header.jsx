@@ -65,7 +65,7 @@ const Header = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(showCity);
     } else {
-      console.log("Geolocation is not supported by this browser.");
+      console.error("Geolocation is not supported by this browser.");
     }
 
     function showCity(position) {
@@ -87,7 +87,9 @@ const Header = () => {
     setSearchedLocation(locationValue);
   };
 
-  const handleSetLocation = () => {
+  const handleSetLocation = (ev) => {
+    ev.preventDefault();
+
     setLocation(searchedLocation);
     setSearchedLocation("");
   };
@@ -100,44 +102,49 @@ const Header = () => {
         </Text>
         {logoIcons()}
       </div>
-      <Flex w="100%" gap="xs" align="center" justify="center">
-        <TextInput
-          className={classes.header_search_input}
-          radius="xl"
-          size="sm"
-          placeholder="Search city"
-          onChange={(ev) => handleSearchLocation(ev.target.value)}
-          value={searchedLocation}
-          leftSection={
-            <ActionIcon
-              variant="subtle"
-              size="input-sm"
-              radius="xl"
-              color="gray"
-              aria-label="Current location"
-              onClick={getCurrentLocation}
-            >
-              <IconCurrentLocation
-                style={{ width: "1.1rem", height: "1.1rem" }}
-                stroke={1.5}
-              />
-            </ActionIcon>
-          }
-        />
-        <ActionIcon
-          variant="light"
-          size="input-sm"
-          radius="xl"
-          color="gray"
-          aria-label="Search"
-          onClick={handleSetLocation}
-        >
-          <IconSearch
-            style={{ width: "1.1rem", height: "1.1rem" }}
-            stroke={1.5}
+      <form
+        className={classes.search_location_form}
+        onSubmit={handleSetLocation}
+      >
+        <Flex w="100%" gap="xs" align="center" justify="center">
+          <TextInput
+            className={classes.header_search_input}
+            radius="xl"
+            size="sm"
+            placeholder="Search city"
+            onChange={(ev) => handleSearchLocation(ev.target.value)}
+            value={searchedLocation}
+            leftSection={
+              <ActionIcon
+                variant="subtle"
+                size="input-sm"
+                radius="xl"
+                color="gray"
+                aria-label="Current location"
+                onClick={getCurrentLocation}
+              >
+                <IconCurrentLocation
+                  style={{ width: "1.1rem", height: "1.1rem" }}
+                  stroke={1.5}
+                />
+              </ActionIcon>
+            }
           />
-        </ActionIcon>
-      </Flex>
+          <ActionIcon
+            variant="light"
+            size="input-sm"
+            radius="xl"
+            color="gray"
+            aria-label="Search"
+            onClick={handleSetLocation}
+          >
+            <IconSearch
+              style={{ width: "1.1rem", height: "1.1rem" }}
+              stroke={1.5}
+            />
+          </ActionIcon>
+        </Flex>
+      </form>
       <div className={classes.header_buttons}>
         <Menu shadow="md" width={300} position="bottom-end">
           <Menu.Target>

@@ -25,7 +25,7 @@ const App = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(showCity);
     } else {
-      console.log("Geolocation is not supported by this browser.");
+      console.error("Geolocation is not supported by this browser.");
     }
 
     function showCity(position) {

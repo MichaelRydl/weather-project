@@ -1,7 +1,3 @@
-export const kelvinToCelsius = (kelvin) => {
-  return kelvin - 273.15;
-};
-
 export const convertUnixTimestampToTime = (timestamp) => {
   const unixTimestamp = timestamp * 1000;
 
