@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSetRecoilState } from "recoil";
+import { useRecoilState, useSetRecoilState } from "recoil";
 import {
   ActionIcon,
   Flex,
@@ -24,13 +24,14 @@ import Cloudy from "../../assets/icons/cloudy.svg?react";
 import Rain from "../../assets/icons/rain.svg?react";
 import Snow from "../../assets/icons/snow.svg?react";
 import LigtningBolt from "../../assets/icons/lightning-bolt.svg?react";
-import { weatherLocationState } from "../../state/atoms";
+import { weatherLocationState, weatherUnit } from "../../state/atoms";
 
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 const Header = () => {
   const icons = [ClearDay, Cloudy, Rain, Snow, LigtningBolt];
   const setLocation = useSetRecoilState(weatherLocationState);
+  const [unit, setUnit] = useRecoilState(weatherUnit);
   const [logoIcon, setLogoIcon] = useState(0);
   const [searchedLocation, setSearchedLocation] = useState("");
   const { setColorScheme } = useMantineColorScheme();
@@ -81,6 +82,10 @@ const Header = () => {
         })
         .catch((error) => console.log(error));
     }
+  };
+
+  const handleUnitChange = (value) => {
+    setUnit(value);
   };
 
   const handleSearchLocation = (locationValue) => {
@@ -165,12 +170,26 @@ const Header = () => {
           </Menu.Target>
           <Menu.Dropdown>
             <Menu.Label>Temperature:</Menu.Label>
-            <SegmentedControl radius="sm" data={["ºC", "ºF"]} fullWidth />
-            <Menu.Label>Units of measurement:</Menu.Label>
             <SegmentedControl
+              value={unit}
               radius="sm"
-              data={["standard", "metric", "imperial"]}
+              data={[
+                { label: "°C", value: "metric" },
+                { label: "°F", value: "imperial" },
+              ]}
               fullWidth
+              onChange={handleUnitChange}
+            />
+            <Menu.Label>Wind speed:</Menu.Label>
+            <SegmentedControl
+              value={unit}
+              radius="sm"
+              data={[
+                { label: "meter/sec", value: "metric" },
+                { label: "miles/hour", value: "imperial" },
+              ]}
+              fullWidth
+              onChange={handleUnitChange}
             />
           </Menu.Dropdown>
         </Menu>

@@ -5,41 +5,54 @@ import { IconStar } from "@tabler/icons-react";
 import { convertUnixTimestampToTime } from "../../utils/utils";
 import axios from "axios";
 import classes from "./Main.module.css";
-import ClearDay from "../../assets/icons/clear-day.svg?react";
-import Cloudy from "../../assets/icons/openweathermap/04d.svg?react";
-import OvercastDay from "../../assets/icons/overcast-day.svg?react";
-import Sunrise from "../../assets/icons/line/sunrise.svg?react";
+import Sunrise from "../../assets/icons/line/sunrise.svg";
 import Sunset from "../../assets/icons/line/sunset.svg?react";
 import DayItem from "../DayItem/DayItem";
 import {
   favouriteLocationsState,
+  forecastDataState,
   weatherDataState,
   weatherLocationState,
+  weatherUnit,
 } from "../../state/atoms";
 
 const API_KEY = import.meta.env.VITE_OPEN_WEATHER_API_KEY;
 
 const Main = () => {
   const location = useRecoilValue(weatherLocationState);
+  const unit = useRecoilValue(weatherUnit);
   const [favouriteLocations, setFavouriteLocations] = useRecoilState(
     favouriteLocationsState
   );
   const [weatherData, setWeatherData] = useRecoilState(weatherDataState);
+  const [forecastData, setForecastData] = useRecoilState(forecastDataState);
 
   useEffect(() => {
     const fetchWeatherData = async () => {
       try {
         const weatherResponse = await axios.get(
-          `https://api.openweathermap.org/data/2.5/weather?q=${location}&units=metric&appid=${API_KEY}`
+          `https://api.openweathermap.org/data/2.5/weather?q=${location}&units=${
+            unit === "metric" ? "metric" : "imperial"
+          }&appid=${API_KEY}`
+        );
+        const weatherForecastResponse = await axios.get(
+          `https://api.openweathermap.org/data/2.5/forecast?q=${location}&units=${
+            unit === "metric" ? "metric" : "imperial"
+          }&appid=${API_KEY}`
+        );
+        const dailyForecast = weatherForecastResponse.data.list.filter(
+          (_forecast, index) => index % 7 === 0
         );
         setWeatherData(weatherResponse.data);
+        setForecastData(dailyForecast);
       } catch (error) {
         console.error(error);
+        alert("This location wasn't found.");
       }
     };
 
     location && fetchWeatherData();
-  }, [location, setWeatherData]);
+  }, [location, unit, setWeatherData, setForecastData]);
 
   const addFavouriteLocation = () => {
     if (
@@ -53,6 +66,8 @@ const Main = () => {
       { name: weatherData.name, country: weatherData.sys.country },
     ]);
   };
+
+  console.log(forecastData);
 
   return (
     <div className={classes.wrapper}>
@@ -101,11 +116,17 @@ const Main = () => {
                     </Text>
                     <Text size="4rem" c="white">
                       {Math.round(weatherData.main.temp)}
-                      <sup style={{ fontSize: "2rem" }}>°C</sup>
+                      <sup style={{ fontSize: "2rem" }}>
+                        {unit === "metric" ? "°C" : "°F"}
+                      </sup>
                     </Text>
                   </Flex>
                   <Flex align="center" direction="row">
-                    <Sunrise style={{ width: "2rem" }} />
+                    <img
+                      className={classes.weather_icon}
+                      src={Sunrise}
+                      alt=""
+                    />
                     <Text size="sm" c="white">
                       {`${convertUnixTimestampToTime(
                         weatherData.sys.sunrise
@@ -132,37 +153,16 @@ const Main = () => {
         ></Paper>
       </div>
       <div className={classes.wrapper_forecast}>
-        <Flex gap="1rem" wrap="wrap">
-          <DayItem
-            temperature="20°C"
-            description="Overcast"
-            weatherIcon={<OvercastDay />}
-          />
-          <DayItem
-            temperature="21°C"
-            description="Sunny"
-            weatherIcon={<ClearDay />}
-          />
-          <DayItem
-            temperature="21°C"
-            description="Sunny"
-            weatherIcon={<ClearDay />}
-          />
-          <DayItem
-            temperature="24°C"
-            description="Sunny"
-            weatherIcon={<ClearDay />}
-          />
-          <DayItem
-            temperature="21°C"
-            description="Cloudy"
-            weatherIcon={<Cloudy />}
-          />
-          <DayItem
-            temperature="19°C"
-            description="Cloudy"
-            weatherIcon={<Cloudy />}
-          />
+        <Flex justify="center" gap="1rem" wrap="wrap">
+          {forecastData.map((forecast, i) => (
+            <DayItem
+              key={i}
+              time={forecast.dt}
+              temperature={forecast.main.temp}
+              description={forecast.weather[0].main}
+              weatherIcon={forecast.weather[0].icon}
+            />
+          ))}
         </Flex>
       </div>
     </div>

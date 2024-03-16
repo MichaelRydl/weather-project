@@ -13,7 +13,7 @@
 
 .city_box {
   width: 100%;
-  height: 15%;
+  min-height: 6rem;
   position: relative;
   background-image: url("../../assets/images/background.jpg");
   background-size: cover;
