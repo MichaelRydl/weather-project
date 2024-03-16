@@ -1,10 +1,19 @@
-export const convertUnixTimestampToTime = (timestamp) => {
-  const unixTimestamp = timestamp * 1000;
+export const getTime = (dateTime) => {
+  return dateTime.split("T")[1];
+};
 
-  const date = new Date(unixTimestamp);
+export const getNameOfTheDay = (dateString) => {
+  const date = new Date(dateString);
+  const dayOfWeekNumber = date.getDay();
+  const daysOfWeek = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
 
-  const hours = ("0" + date.getHours()).slice(-2);
-  const minutes = ("0" + date.getMinutes()).slice(-2);
-
-  return hours + ":" + minutes;
+  return daysOfWeek[dayOfWeekNumber];
 };

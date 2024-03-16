@@ -2,49 +2,51 @@ import { useEffect } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { ActionIcon, Card, Flex, Loader, Text, Paper } from "@mantine/core";
 import { IconStar } from "@tabler/icons-react";
-import { convertUnixTimestampToTime } from "../../utils/utils";
+import { getTime } from "../../utils/utils";
+import { wmoCodes } from "../../../wmo-codes";
 import axios from "axios";
 import classes from "./Main.module.css";
 import Sunrise from "../../assets/icons/line/sunrise.svg";
-import Sunset from "../../assets/icons/line/sunset.svg?react";
+import Sunset from "../../assets/icons/line/sunset.svg";
 import DayItem from "../DayItem/DayItem";
 import {
   favouriteLocationsState,
-  forecastDataState,
   weatherDataState,
+  geolocationDataState,
   weatherLocationState,
-  weatherUnit,
+  temperatureUnitState,
+  precipitationUnitState,
+  windSpeedUnitState,
 } from "../../state/atoms";
-
-const API_KEY = import.meta.env.VITE_OPEN_WEATHER_API_KEY;
 
 const Main = () => {
   const location = useRecoilValue(weatherLocationState);
-  const unit = useRecoilValue(weatherUnit);
+  const temperatureUnit = useRecoilValue(temperatureUnitState);
+  const windSpeedUnit = useRecoilValue(windSpeedUnitState);
+  const precipitationUnit = useRecoilValue(precipitationUnitState);
   const [favouriteLocations, setFavouriteLocations] = useRecoilState(
     favouriteLocationsState
   );
   const [weatherData, setWeatherData] = useRecoilState(weatherDataState);
-  const [forecastData, setForecastData] = useRecoilState(forecastDataState);
+  const [geolocationData, setGeolocationData] =
+    useRecoilState(geolocationDataState);
 
   useEffect(() => {
     const fetchWeatherData = async () => {
       try {
+        const geolocationResponse = await axios.get(
+          `https://geocoding-api.open-meteo.com/v1/search?name=${location}&count=1&language=en&format=json`
+        );
+
+        setGeolocationData(geolocationResponse.data.results[0]);
+
+        const { latitude, longitude } = geolocationResponse.data.results[0];
+
         const weatherResponse = await axios.get(
-          `https://api.openweathermap.org/data/2.5/weather?q=${location}&units=${
-            unit === "metric" ? "metric" : "imperial"
-          }&appid=${API_KEY}`
+          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,surface_pressure,wind_speed_10m&hourly=sunshine_duration&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum&timezone=auto&temperature_unit=${temperatureUnit}&wind_speed_unit=${windSpeedUnit}&precipitation_unit=${precipitationUnit}`
         );
-        const weatherForecastResponse = await axios.get(
-          `https://api.openweathermap.org/data/2.5/forecast?q=${location}&units=${
-            unit === "metric" ? "metric" : "imperial"
-          }&appid=${API_KEY}`
-        );
-        const dailyForecast = weatherForecastResponse.data.list.filter(
-          (_forecast, index) => index % 7 === 0
-        );
+
         setWeatherData(weatherResponse.data);
-        setForecastData(dailyForecast);
       } catch (error) {
         console.error(error);
         alert("This location wasn't found.");
@@ -52,22 +54,29 @@ const Main = () => {
     };
 
     location && fetchWeatherData();
-  }, [location, unit, setWeatherData, setForecastData]);
+  }, [
+    location,
+    temperatureUnit,
+    windSpeedUnit,
+    precipitationUnit,
+    setWeatherData,
+    setGeolocationData,
+  ]);
 
   const addFavouriteLocation = () => {
     if (
-      favouriteLocations.some((location) => location.name === weatherData.name)
+      favouriteLocations.some(
+        (location) => location.name === geolocationData.name
+      )
     ) {
-      return alert(`${weatherData.name} is already in the favourite list.`);
+      return alert(`${geolocationData.name} is already in the favourite list.`);
     }
 
     setFavouriteLocations((prevState) => [
       ...prevState,
-      { name: weatherData.name, country: weatherData.sys.country },
+      { name: geolocationData.name, country: geolocationData.country_code },
     ]);
   };
-
-  console.log(forecastData);
 
   return (
     <div className={classes.wrapper}>
@@ -95,12 +104,16 @@ const Main = () => {
                 />
               </ActionIcon>
             </div>
-            {weatherData.sys ? (
+            {weatherData ? (
               <Flex mih="100%" justify="space-between">
                 <Card.Section>
                   <img
                     className={classes.weather_icon}
-                    src={`/icons/openweathermap/${weatherData.weather[0].icon}.svg`}
+                    src={
+                      weatherData.current.is_day
+                        ? wmoCodes[weatherData.current.weather_code].day.image
+                        : wmoCodes[weatherData.current.weather_code].night.image
+                    }
                     alt=""
                   />
                 </Card.Section>
@@ -112,29 +125,23 @@ const Main = () => {
                 >
                   <Flex align="end" direction="column">
                     <Text className={classes.city_text} size="lg" c="white">
-                      {`${weatherData.name}, ${weatherData.sys.country}`}
+                      {`${geolocationData.name}, ${geolocationData.country_code}`}
                     </Text>
                     <Text size="4rem" c="white">
-                      {Math.round(weatherData.main.temp)}
+                      {Math.round(weatherData.current.temperature_2m)}
                       <sup style={{ fontSize: "2rem" }}>
-                        {unit === "metric" ? "°C" : "°F"}
+                        {temperatureUnit === "celsius" ? "°C" : "°F"}
                       </sup>
                     </Text>
                   </Flex>
                   <Flex align="center" direction="row">
-                    <img
-                      className={classes.weather_icon}
-                      src={Sunrise}
-                      alt=""
-                    />
+                    <img style={{ width: "2rem" }} src={Sunrise} alt="" />
                     <Text size="sm" c="white">
-                      {`${convertUnixTimestampToTime(
-                        weatherData.sys.sunrise
-                      )} - ${convertUnixTimestampToTime(
-                        weatherData.sys.sunset
+                      {`${getTime(weatherData.daily.sunrise[0])} - ${getTime(
+                        weatherData.daily.sunset[0]
                       )}`}
                     </Text>
-                    <Sunset style={{ width: "2rem" }} />
+                    <img style={{ width: "2rem" }} src={Sunset} alt="" />
                   </Flex>
                 </Flex>
               </Flex>
@@ -154,15 +161,18 @@ const Main = () => {
       </div>
       <div className={classes.wrapper_forecast}>
         <Flex justify="center" gap="1rem" wrap="wrap">
-          {forecastData.map((forecast, i) => (
-            <DayItem
-              key={i}
-              time={forecast.dt}
-              temperature={forecast.main.temp}
-              description={forecast.weather[0].main}
-              weatherIcon={forecast.weather[0].icon}
-            />
-          ))}
+          {weatherData ? (
+            weatherData.daily.time.map((date, i) => (
+              <DayItem
+                key={i}
+                date={date}
+                weatherData={weatherData}
+                index={i}
+              />
+            ))
+          ) : (
+            <Loader color="white" type="dots" size={50} />
+          )}
         </Flex>
       </div>
     </div>

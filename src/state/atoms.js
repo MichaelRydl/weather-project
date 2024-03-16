@@ -2,7 +2,12 @@ import { atom } from "recoil";
 
 export const weatherDataState = atom({
   key: "weatherDataState",
-  default: [],
+  default: null,
+});
+
+export const geolocationDataState = atom({
+  key: "geolocationDataState",
+  default: null,
 });
 
 export const forecastDataState = atom({
@@ -25,7 +30,17 @@ export const favouriteLocationsState = atom({
   default: [],
 });
 
-export const weatherUnit = atom({
-  key: "weatherUnit",
-  default: "metric",
+export const temperatureUnitState = atom({
+  key: "temperatureUnit",
+  default: "celsius",
+});
+
+export const windSpeedUnitState = atom({
+  key: "windSpeedUnit",
+  default: "kmh",
+});
+
+export const precipitationUnitState = atom({
+  key: "precipitationUnit",
+  default: "mm",
 });

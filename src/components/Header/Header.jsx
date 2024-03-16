@@ -24,14 +24,24 @@ import Cloudy from "../../assets/icons/cloudy.svg?react";
 import Rain from "../../assets/icons/rain.svg?react";
 import Snow from "../../assets/icons/snow.svg?react";
 import LigtningBolt from "../../assets/icons/lightning-bolt.svg?react";
-import { weatherLocationState, weatherUnit } from "../../state/atoms";
+import {
+  weatherLocationState,
+  temperatureUnitState,
+  windSpeedUnitState,
+  precipitationUnitState,
+} from "../../state/atoms";
 
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 const Header = () => {
   const icons = [ClearDay, Cloudy, Rain, Snow, LigtningBolt];
   const setLocation = useSetRecoilState(weatherLocationState);
-  const [unit, setUnit] = useRecoilState(weatherUnit);
+  const [temperatureUnit, setTemperatureUnit] =
+    useRecoilState(temperatureUnitState);
+  const [windSpeedUnit, setWindSpeedUnit] = useRecoilState(windSpeedUnitState);
+  const [precipitationUnit, setPrecipitationUnit] = useRecoilState(
+    precipitationUnitState
+  );
   const [logoIcon, setLogoIcon] = useState(0);
   const [searchedLocation, setSearchedLocation] = useState("");
   const { setColorScheme } = useMantineColorScheme();
@@ -64,12 +74,12 @@ const Header = () => {
 
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(showCity);
+      navigator.geolocation.getCurrentPosition(showLocation);
     } else {
       console.error("Geolocation is not supported by this browser.");
     }
 
-    function showCity(position) {
+    function showLocation(position) {
       const latitude = position.coords.latitude;
       const longitude = position.coords.longitude;
       const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${API_KEY}`;
@@ -77,15 +87,39 @@ const Header = () => {
       fetch(url)
         .then((response) => response.json())
         .then((data) => {
-          const city = data.results[0].address_components[4].long_name;
-          setLocation(city);
+          if (data.results.length > 0) {
+            const output = {};
+
+            if (data.results.length > 0) {
+              data.results.map((result) => {
+                if (result.address_components.length > 0) {
+                  result.address_components.map((address) => {
+                    if (address.types[0]) {
+                      if (!output[address.types[0]]) {
+                        output[address.types[0]] = address.long_name;
+                      }
+                    }
+                  });
+                }
+              });
+            }
+            setLocation(output.locality);
+          }
         })
         .catch((error) => console.log(error));
     }
   };
 
-  const handleUnitChange = (value) => {
-    setUnit(value);
+  const handleTemperatureUnitChange = (value) => {
+    setTemperatureUnit(value);
+  };
+
+  const handleWindSpeedUnitChange = (value) => {
+    setWindSpeedUnit(value);
+  };
+
+  const handlePrecipitationUnitChange = (value) => {
+    setPrecipitationUnit(value);
   };
 
   const handleSearchLocation = (locationValue) => {
@@ -171,25 +205,38 @@ const Header = () => {
           <Menu.Dropdown>
             <Menu.Label>Temperature:</Menu.Label>
             <SegmentedControl
-              value={unit}
+              value={temperatureUnit}
               radius="sm"
               data={[
-                { label: "°C", value: "metric" },
-                { label: "°F", value: "imperial" },
+                { label: "°C", value: "celsius" },
+                { label: "°F", value: "fahrenheit" },
               ]}
               fullWidth
-              onChange={handleUnitChange}
+              onChange={handleTemperatureUnitChange}
             />
             <Menu.Label>Wind speed:</Menu.Label>
             <SegmentedControl
-              value={unit}
+              value={windSpeedUnit}
               radius="sm"
               data={[
-                { label: "meter/sec", value: "metric" },
-                { label: "miles/hour", value: "imperial" },
+                { label: "Km/h", value: "kmh" },
+                { label: "m/s", value: "ms" },
+                { label: "Mph", value: "mph" },
+                { label: "Knots", value: "kn" },
               ]}
               fullWidth
-              onChange={handleUnitChange}
+              onChange={handleWindSpeedUnitChange}
+            />
+            <Menu.Label>Precipitation:</Menu.Label>
+            <SegmentedControl
+              value={precipitationUnit}
+              radius="sm"
+              data={[
+                { label: "mm", value: "mm" },
+                { label: "in", value: "inch" },
+              ]}
+              fullWidth
+              onChange={handlePrecipitationUnitChange}
             />
           </Menu.Dropdown>
         </Menu>

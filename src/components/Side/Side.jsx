@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
-import { useRecoilState, useSetRecoilState } from "recoil";
+import { useRecoilState, useSetRecoilState, useRecoilValue } from "recoil";
 import { ActionIcon, Divider, Flex, Text } from "@mantine/core";
 import { IconMinus } from "@tabler/icons-react";
 import {
   favouriteLocationsState,
+  temperatureUnitState,
   weatherLocationState,
 } from "../../state/atoms";
+import { wmoCodes } from "../../../wmo-codes";
 import axios from "axios";
 import classes from "./Side.module.css";
 
-const API_KEY = import.meta.env.VITE_OPEN_WEATHER_API_KEY;
-
 const Side = () => {
+  const temperatureUnit = useRecoilValue(temperatureUnitState);
   const setLocation = useSetRecoilState(weatherLocationState);
   const [favouriteLocations, setFavouriteLocations] = useRecoilState(
     favouriteLocationsState
@@ -21,17 +22,24 @@ const Side = () => {
   useEffect(() => {
     const fetchWeatherData = async (location) => {
       try {
+        const geolocationResponse = await axios.get(
+          `https://geocoding-api.open-meteo.com/v1/search?name=${location.name}&count=1&language=en&format=json`
+        );
+
+        const { latitude, longitude } = geolocationResponse.data.results[0];
+
         const weatherResponse = await axios.get(
-          `https://api.openweathermap.org/data/2.5/weather?q=${location.name}&units=metric&appid=${API_KEY}`
+          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,surface_pressure,wind_speed_10m&hourly=sunshine_duration&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum&timezone=auto&temperature_unit=${temperatureUnit}`
         );
         setCurrentLocationData((prevState) => {
           const filteredData = prevState.filter(
-            (item) => item.favouriteLocation !== location.name
+            (item) =>
+              item.favouriteLocation !== `${location.name}, ${location.country}`
           );
           return [
             ...filteredData,
             {
-              favouriteLocation: location.name,
+              favouriteLocation: `${location.name}, ${location.country}`,
               weatherData: weatherResponse.data,
             },
           ];
@@ -44,9 +52,10 @@ const Side = () => {
     if (favouriteLocations.length > 0) {
       fetchWeatherData(favouriteLocations[favouriteLocations.length - 1]);
     }
-  }, [favouriteLocations]);
+  }, [favouriteLocations, temperatureUnit]);
 
   const handleWeatherItemClick = (location) => {
+    console.log(location);
     setLocation(location);
   };
 
@@ -63,26 +72,34 @@ const Side = () => {
 
   return (
     <div className={classes.wrapper}>
-      {currentLocationData?.map(({ weatherData }, i) => (
+      {currentLocationData?.map(({ favouriteLocation, weatherData }, i) => (
         <span key={i}>
           <div
             className={classes.city_box}
-            onClick={() => handleWeatherItemClick(weatherData.name)}
+            onClick={() =>
+              handleWeatherItemClick(favouriteLocation.split(", ")[0])
+            }
           >
             <div className={classes.city_box_overlay}>
               <Flex mih={"100%"} justify={"space-between"}>
                 <img
                   className={classes.weather_icon}
-                  src={`/icons/openweathermap/${weatherData.weather[0].icon}.svg`}
+                  src={
+                    weatherData.current.is_day
+                      ? wmoCodes[weatherData.current.weather_code].day.image
+                      : wmoCodes[weatherData.current.weather_code].night.image
+                  }
                   alt=""
                 />
                 <Flex align={"end"} direction={"column"}>
                   <Text className={classes.city_text} size={"md"} c="white">
-                    {`${weatherData.name}, ${weatherData.sys.country}`}
+                    {favouriteLocation}
                   </Text>
                   <Text size={"2.5rem"} c="white">
-                    {Math.round(weatherData.main.temp)}
-                    <sup style={{ fontSize: "1rem" }}>°C</sup>
+                    {Math.round(weatherData.current.temperature_2m)}
+                    <sup style={{ fontSize: "1rem" }}>
+                      {weatherData.daily_units.temperature_2m_max}
+                    </sup>
                   </Text>
                 </Flex>
               </Flex>

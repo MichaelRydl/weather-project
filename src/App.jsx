@@ -23,12 +23,12 @@ const App = () => {
 
   useEffect(() => {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(showCity);
+      navigator.geolocation.getCurrentPosition(showLocation);
     } else {
       console.error("Geolocation is not supported by this browser.");
     }
 
-    function showCity(position) {
+    function showLocation(position) {
       const latitude = position.coords.latitude;
       const longitude = position.coords.longitude;
       const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${API_KEY}`;
@@ -36,12 +36,28 @@ const App = () => {
       fetch(url)
         .then((response) => response.json())
         .then((data) => {
-          const city = data.results[0].address_components[4].long_name;
-          setLocation(city);
+          if (data.results.length > 0) {
+            const output = {};
+
+            if (data.results.length > 0) {
+              data.results.map((result) => {
+                if (result.address_components.length > 0) {
+                  result.address_components.map((address) => {
+                    if (address.types[0]) {
+                      if (!output[address.types[0]]) {
+                        output[address.types[0]] = address.long_name;
+                      }
+                    }
+                  });
+                }
+              });
+            }
+            setLocation(output.locality);
+          }
         })
         .catch((error) => console.log(error));
     }
-  }, []);
+  }, [setLocation]);
 
   return (
     <MantineThemeProvider>

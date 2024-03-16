@@ -1,27 +1,12 @@
 import { Flex, Paper, Text } from "@mantine/core";
-import { useRecoilValue } from "recoil";
-import { weatherUnit } from "../../state/atoms";
-import PressureLow from "../../assets/icons/pressure-low.svg?react";
-import PressureHigh from "../../assets/icons/pressure-high.svg?react";
+import { wmoCodes } from "../../../wmo-codes";
+import { getTime, getNameOfTheDay } from "../../utils/utils";
+import Raindrop from "../../assets/icons/raindrop.svg";
+import Sunrise from "../../assets/icons/sunrise.svg";
+import Sunset from "../../assets/icons/sunset.svg";
 import classes from "./DayItem.module.css";
 
-const DayItem = ({ time, weatherIcon, temperature, description }) => {
-  const unit = useRecoilValue(weatherUnit);
-
-  const getDayNameFromTimestamp = () => {
-    const daysOfWeek = [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-    ];
-    const dayIndex = new Date(time * 1000).getDay();
-    return daysOfWeek[dayIndex];
-  };
-
+const DayItem = ({ date, weatherData, index }) => {
   return (
     <div className={classes.wrapper}>
       <Paper shadow="xl" radius="xl" p="lg">
@@ -32,28 +17,39 @@ const DayItem = ({ time, weatherIcon, temperature, description }) => {
           gap={"sm"}
         >
           <Text size={"sm"} c="gray">
-            {getDayNameFromTimestamp()}
+            {getNameOfTheDay(date)}
           </Text>
           <img
             className={classes.weather_icon}
-            src={`/icons/openweathermap/${weatherIcon}.svg`}
+            src={
+              weatherData.is_day
+                ? wmoCodes[weatherData.daily.weather_code[index]].day.image
+                : wmoCodes[weatherData.daily.weather_code[index]].night.image
+            }
             alt=""
           />
           <div className={classes.weather_temperature}>
             <Text size={"xl"} fw={700} c="white">
-              {Math.round(temperature)}
+              {Math.round(weatherData.daily.temperature_2m_min[index])} /{" "}
+              {Math.round(weatherData.daily.temperature_2m_max[index])}
               <sup style={{ fontSize: "0.8rem" }}>
-                {unit === "metric" ? "°C" : "°F"}
+                {weatherData.daily_units.temperature_2m_max}
               </sup>
             </Text>
           </div>
-          <Flex align={"center"}>
-            <PressureLow className={classes.weather_icon_pressure} />
-            <Text size={"sm"}>18°C</Text>
-            <PressureHigh className={classes.weather_icon_pressure} />
-            <Text size={"sm"}>28°C</Text>
+          <Flex align="center">
+            <img className={classes.weather_icon_info} src={Raindrop} alt="" />
+            <Text size="sm">{`${weatherData.daily.precipitation_sum[index]}${weatherData.daily_units.precipitation_sum}`}</Text>
           </Flex>
-          <Text size={"sm"}>{description}</Text>
+          <Flex align="center">
+            <img className={classes.weather_icon_info} src={Sunrise} alt="" />
+            <Text size="sm">
+              {`${getTime(weatherData.daily.sunrise[index])} - ${getTime(
+                weatherData.daily.sunset[index]
+              )}`}
+            </Text>
+            <img className={classes.weather_icon_info} src={Sunset} alt="" />
+          </Flex>
         </Flex>
       </Paper>
     </div>
