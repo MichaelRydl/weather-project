@@ -29,6 +29,7 @@ import {
   temperatureUnitState,
   windSpeedUnitState,
   precipitationUnitState,
+  isLoadingState,
 } from "../../state/atoms";
 
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -36,6 +37,7 @@ const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 const Header = () => {
   const icons = [ClearDay, Cloudy, Rain, Snow, LigtningBolt];
   const setLocation = useSetRecoilState(weatherLocationState);
+  const setIsLoading = useSetRecoilState(isLoadingState);
   const [temperatureUnit, setTemperatureUnit] =
     useRecoilState(temperatureUnitState);
   const [windSpeedUnit, setWindSpeedUnit] = useRecoilState(windSpeedUnitState);
@@ -75,6 +77,7 @@ const Header = () => {
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(showLocation);
+      setIsLoading(true);
     } else {
       console.error("Geolocation is not supported by this browser.");
     }
@@ -104,6 +107,7 @@ const Header = () => {
               });
             }
             setLocation(output.locality);
+            setIsLoading(false);
           }
         })
         .catch((error) => console.log(error));

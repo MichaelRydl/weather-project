@@ -44,3 +44,8 @@ export const precipitationUnitState = atom({
   key: "precipitationUnit",
   default: "mm",
 });
+
+export const isLoadingState = atom({
+  key: "isLoadingState",
+  default: false,
+});
