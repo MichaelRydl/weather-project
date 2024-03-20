@@ -9,8 +9,8 @@ import { useSetRecoilState } from "recoil";
 import { weatherLocationState } from "./state/atoms";
 import classes from "./App.module.css";
 import Header from "./components/Header/Header";
-import Main from "./components/Main/Main";
-import Side from "./components/Side/Side";
+import MainWeatherCard from "./components/MainWeatherCard/MainWeatherCard";
+import FavouriteList from "./components/FavouriteList/FavouriteList";
 
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
@@ -73,10 +73,10 @@ const App = () => {
             <Divider my="md" />
           </div>
           <div className={classes.main}>
-            <Main />
+            <MainWeatherCard />
           </div>
           <div className={classes.side}>
-            <Side />
+            <FavouriteList />
           </div>
         </div>
       </div>

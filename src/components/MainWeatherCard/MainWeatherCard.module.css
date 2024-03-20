@@ -28,7 +28,7 @@
   background-repeat: no-repeat;
 }
 
-.card_overlay {
+.main_weather_info .card_overlay {
   padding: 1rem 2rem;
   position: absolute;
   top: 0;
@@ -38,28 +38,23 @@
   background-color: rgba(0, 0, 0, 0.5);
 }
 
-.weather_icon {
+.main_weather_info .weather_icon {
   width: 10rem;
   height: 10rem;
 }
 
-.info {
+.main_weather_info .info {
   padding-right: 1rem;
 }
 
-.weather_informations {
+.main_weather_info .weather_informations {
   width: 100%;
   height: 100%;
 }
 
-.favourite_icon_wrapper {
+.main_weather_info .favourite_icon_wrapper {
   position: absolute;
   top: 10px;
   right: 10px;
   z-index: 1000;
-}
-
-.weather_icon_info {
-  width: 4rem;
-  height: 4rem;
 }

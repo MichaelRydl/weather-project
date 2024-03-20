@@ -14,7 +14,7 @@ import { IconStar } from "@tabler/icons-react";
 import { getTime } from "../../utils/utils";
 import { wmoCodes } from "../../../wmo-codes";
 import axios from "axios";
-import classes from "./Main.module.css";
+import classes from "./MainWeatherCard.module.css";
 import Sunrise from "../../assets/icons/line/sunrise.svg";
 import Sunset from "../../assets/icons/line/sunset.svg";
 import Wind from "../../assets/icons/wind.svg";
@@ -22,6 +22,18 @@ import Humidity from "../../assets/icons/humidity.svg";
 import Umbrella from "../../assets/icons/umbrella.svg";
 import Barometer from "../../assets/icons/barometer.svg";
 import Cloudy from "../../assets/icons/cloudy.svg";
+import DayItem from "../DayItem/DayItem";
+import InfoItem from "../InfoItem/InfoItem";
+import {
+  favouriteLocationsState,
+  weatherDataState,
+  geolocationDataState,
+  weatherLocationState,
+  temperatureUnitState,
+  precipitationUnitState,
+  windSpeedUnitState,
+  isLoadingState,
+} from "../../state/atoms";
 import UVIndex1 from "../../assets/icons/uv-index-1.svg";
 import UVIndex2 from "../../assets/icons/uv-index-2.svg";
 import UVIndex3 from "../../assets/icons/uv-index-3.svg";
@@ -33,19 +45,8 @@ import UVIndex8 from "../../assets/icons/uv-index-8.svg";
 import UVIndex9 from "../../assets/icons/uv-index-9.svg";
 import UVIndex10 from "../../assets/icons/uv-index-10.svg";
 import UVIndex11 from "../../assets/icons/uv-index-11.svg";
-import DayItem from "../DayItem/DayItem";
-import {
-  favouriteLocationsState,
-  weatherDataState,
-  geolocationDataState,
-  weatherLocationState,
-  temperatureUnitState,
-  precipitationUnitState,
-  windSpeedUnitState,
-  isLoadingState,
-} from "../../state/atoms";
 
-const Main = () => {
+const MainWeatherCard = () => {
   const location = useRecoilValue(weatherLocationState);
   const temperatureUnit = useRecoilValue(temperatureUnitState);
   const windSpeedUnit = useRecoilValue(windSpeedUnitState);
@@ -123,6 +124,54 @@ const Main = () => {
     const index = Math.min(Math.floor(uvIndex) - 1, UVIndexIcons.length - 1);
     return UVIndexIcons[index < 0 ? 0 : index];
   };
+
+  const infoItemData = [
+    {
+      data: [
+        weatherData?.current.wind_speed_10m,
+        weatherData?.current_units.wind_speed_10m,
+      ],
+      icon: Wind,
+      infoText: "Wind speed:",
+    },
+    {
+      data: [
+        weatherData?.current.relative_humidity_2m,
+        weatherData?.current_units.relative_humidity_2m,
+      ],
+      icon: Humidity,
+      infoText: "Humidity:",
+    },
+    {
+      data: [
+        weatherData?.current.precipitation,
+        weatherData?.current_units.precipitation,
+      ],
+      icon: Umbrella,
+      infoText: "Precipitation:",
+    },
+    {
+      data: [
+        weatherData?.current.surface_pressure,
+        weatherData?.current_units.surface_pressure,
+      ],
+      icon: Barometer,
+      infoText: "Pressure:",
+    },
+    {
+      data: [
+        weatherData?.current.cloud_cover,
+        weatherData?.current_units.cloud_cover,
+      ],
+      icon: Cloudy,
+      infoText: "Cloud cover:",
+    },
+    {
+      data: ["", ""],
+      icon: getUVIndexIcon(weatherData?.daily.uv_index_max[0]),
+      infoText: "UV Index:",
+    },
+  ];
 
   const hourlySunshineDurationData = (sunshineDuration) => {
     let hourlySunshineData = [];
@@ -226,105 +275,19 @@ const Main = () => {
               w="100%"
               h="100%"
               direction="column"
-              align="flex-start"
+              align="center"
               justify="center"
             >
-              <Flex
-                className={classes.weather_informations_item}
-                align="center"
-                gap="0.5rem"
-                wrap="wrap"
-              >
-                <Text size="lg" c="gray">
-                  Wind speed:
-                </Text>
-                <img className={classes.weather_icon_info} src={Wind} alt="" />
-                <Text size="xl">{`${weatherData.current.wind_speed_10m}${weatherData.current_units.wind_speed_10m}`}</Text>
-              </Flex>
-              <Divider w="100%" />
-              <Flex
-                className={classes.weather_informations_item}
-                align="center"
-                gap="0.5rem"
-                wrap="wrap"
-              >
-                <Text size="lg" c="gray">
-                  Humidity:
-                </Text>
-                <img
-                  className={classes.weather_icon_info}
-                  src={Humidity}
-                  alt=""
-                />
-                <Text size="xl">{`${weatherData.current.relative_humidity_2m}${weatherData.current_units.relative_humidity_2m}`}</Text>
-              </Flex>
-              <Divider w="100%" />
-              <Flex
-                className={classes.weather_informations_item}
-                align="center"
-                gap="0.5rem"
-                wrap="wrap"
-              >
-                <Text size="lg" c="gray">
-                  Precipitation:
-                </Text>
-                <img
-                  className={classes.weather_icon_info}
-                  src={Umbrella}
-                  alt=""
-                />
-                <Text size="xl">{`${weatherData.current.precipitation}${weatherData.current_units.precipitation}`}</Text>
-              </Flex>
-              <Divider w="100%" />
-              <Flex
-                className={classes.weather_informations_item}
-                align="center"
-                gap="0.5rem"
-                wrap="wrap"
-              >
-                <Text size="lg" c="gray">
-                  Pressure:
-                </Text>
-                <img
-                  className={classes.weather_icon_info}
-                  src={Barometer}
-                  alt=""
-                />
-                <Text size="xl">{`${weatherData.current.surface_pressure}${weatherData.current_units.surface_pressure}`}</Text>
-              </Flex>
-              <Divider w="100%" />
-              <Flex
-                className={classes.weather_informations_item}
-                align="center"
-                gap="0.5rem"
-                wrap="wrap"
-              >
-                <Text size="lg" c="gray">
-                  Cloud cover:
-                </Text>
-                <img
-                  className={classes.weather_icon_info}
-                  src={Cloudy}
-                  alt=""
-                />
-                <Text size="xl">{`${weatherData.current.cloud_cover}${weatherData.current_units.cloud_cover}`}</Text>
-              </Flex>
-              <Divider w="100%" />
-              <Flex
-                className={classes.weather_informations_item}
-                align="center"
-                gap="0.5rem"
-                wrap="wrap"
-              >
-                <Text size="lg" c="gray">
-                  UV Index:
-                </Text>
-                <img
-                  className={classes.weather_icon_info}
-                  src={getUVIndexIcon(weatherData.daily.uv_index_max[0])}
-                  alt=""
-                />
-              </Flex>
+              {infoItemData.map((infoItem, i) => (
+                <>
+                  <InfoItem
+                    data={infoItem.data}
+                    infoText={infoItem.infoText}
+                    icon={infoItem.icon}
+                  />
+                  {i !== infoItemData.length - 1 && <Divider w="100%" />}
+                </>
+              ))}
             </Flex>
           ) : (
             <Flex h="100%" align="center" justify="center">
@@ -352,6 +315,9 @@ const Main = () => {
         </Flex>
       </div>
       <div>
+        <Text size="lg" c="gray" p="2rem 1rem 3rem 1rem" ta="center">
+          Sunshine duration for current day:
+        </Text>
         {!isLoading && weatherData ? (
           <LineChart
             w="100%"
@@ -371,6 +337,9 @@ const Main = () => {
         )}
       </div>
       <div>
+        <Text size="lg" c="gray" p="2rem 1rem 3rem 1rem" ta="center">
+          Precipitation for current day:
+        </Text>
         {!isLoading && weatherData ? (
           <LineChart
             w="100%"
@@ -391,4 +360,4 @@ const Main = () => {
   );
 };
 
-export default Main;
+export default MainWeatherCard;

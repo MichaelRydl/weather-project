@@ -9,9 +9,9 @@ import {
 } from "../../state/atoms";
 import { wmoCodes } from "../../../wmo-codes";
 import axios from "axios";
-import classes from "./Side.module.css";
+import classes from "./FavouriteList.module.css";
 
-const Side = () => {
+const FavouriteList = () => {
   const temperatureUnit = useRecoilValue(temperatureUnitState);
   const setLocation = useSetRecoilState(weatherLocationState);
   const [favouriteLocations, setFavouriteLocations] = useRecoilState(
@@ -81,7 +81,7 @@ const Side = () => {
             }
           >
             <div className={classes.city_box_overlay}>
-              <Flex mih={"100%"} justify={"space-between"}>
+              <Flex mih="100%" justify="space-between">
                 <img
                   className={classes.weather_icon}
                   src={
@@ -91,11 +91,11 @@ const Side = () => {
                   }
                   alt=""
                 />
-                <Flex align={"end"} direction={"column"}>
-                  <Text className={classes.city_text} size={"md"} c="white">
+                <Flex align="end" direction="column">
+                  <Text className={classes.city_text} size="md" c="white">
                     {favouriteLocation}
                   </Text>
-                  <Text size={"2.5rem"} c="white">
+                  <Text size="2.5rem" c="white">
                     {Math.round(weatherData.current.temperature_2m)}
                     <sup style={{ fontSize: "1rem" }}>
                       {weatherData.daily_units.temperature_2m_max}
@@ -129,4 +129,4 @@ const Side = () => {
   );
 };
 
-export default Side;
+export default FavouriteList;
