@@ -11,7 +11,7 @@ import {
 } from "@mantine/core";
 import { LineChart } from "@mantine/charts";
 import { IconStar } from "@tabler/icons-react";
-import { getTime } from "../../utils/utils";
+import { getTime, isToday } from "../../utils/utils";
 import { wmoCodes } from "../../../wmo-codes";
 import axios from "axios";
 import classes from "./MainWeatherCard.module.css";
@@ -314,6 +314,11 @@ const MainWeatherCard = () => {
                   {i !== infoItemData.length - 1 && <Divider w="100%" />}
                 </Fragment>
               ))}
+              <Text size="xs" c="gray" mt="xl">
+                Last update:{" "}
+                {`${isToday(weatherData.current.time)} at
+                ${getTime(weatherData.current.time)}`}
+              </Text>
             </Flex>
           ) : (
             <Flex h="100%" align="center" justify="center">

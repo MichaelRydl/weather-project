@@ -17,3 +17,16 @@ export const getNameOfTheDay = (dateString) => {
 
   return daysOfWeek[dayOfWeekNumber];
 };
+
+export const isToday = (dateString) => {
+  const date = new Date(dateString);
+  const currentDate = new Date();
+
+  const isToday =
+    date.getDate() === currentDate.getDate() &&
+    date.getMonth() === currentDate.getMonth() &&
+    date.getFullYear() === currentDate.getFullYear();
+
+  const result = isToday ? "Today" : date.toLocaleString();
+  return result;
+};
