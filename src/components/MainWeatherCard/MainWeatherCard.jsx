@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { Fragment, useEffect } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import {
   ActionIcon,
@@ -102,7 +102,16 @@ const MainWeatherCard = () => {
 
     setFavouriteLocations((prevState) => [
       ...prevState,
-      { name: geolocationData.name, country: geolocationData.country_code },
+      {
+        name: geolocationData.name,
+        country: geolocationData.country_code,
+        weatherData: {
+          weatherCode: weatherData.current.weather_code,
+          temperature: weatherData.current.temperature_2m,
+          temperatureUnit: weatherData.daily_units.temperature_2m_max,
+          isDay: weatherData.current.is_day,
+        },
+      },
     ]);
   };
 
@@ -279,14 +288,14 @@ const MainWeatherCard = () => {
               justify="center"
             >
               {infoItemData.map((infoItem, i) => (
-                <>
+                <Fragment key={i}>
                   <InfoItem
                     data={infoItem.data}
                     infoText={infoItem.infoText}
                     icon={infoItem.icon}
                   />
                   {i !== infoItemData.length - 1 && <Divider w="100%" />}
-                </>
+                </Fragment>
               ))}
             </Flex>
           ) : (
