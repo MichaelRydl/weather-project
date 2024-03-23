@@ -43,7 +43,11 @@ const FavouriteList = () => {
                       ? wmoCodes[weatherData.weatherCode].day.image
                       : wmoCodes[weatherData.weatherCode].night.image
                   }
-                  alt=""
+                  alt={`${
+                    weatherData.isDay
+                      ? wmoCodes[weatherData.weatherCode].day.description
+                      : wmoCodes[weatherData.weatherCode].night.description
+                  } icon`}
                 />
                 <Flex align="end" direction="column">
                   <Text className={classes.city_text} size="md" c="white">

@@ -140,7 +140,7 @@ const MainWeatherCard = () => {
         weatherData?.current.wind_speed_10m,
         weatherData?.current_units.wind_speed_10m,
       ],
-      icon: Wind,
+      icon: { src: Wind, name: "Wind speed" },
       infoText: "Wind speed:",
     },
     {
@@ -148,7 +148,7 @@ const MainWeatherCard = () => {
         weatherData?.current.relative_humidity_2m,
         weatherData?.current_units.relative_humidity_2m,
       ],
-      icon: Humidity,
+      icon: { src: Humidity, name: "Raindrop with percent" },
       infoText: "Humidity:",
     },
     {
@@ -156,7 +156,7 @@ const MainWeatherCard = () => {
         weatherData?.current.precipitation,
         weatherData?.current_units.precipitation,
       ],
-      icon: Umbrella,
+      icon: { src: Umbrella, name: "Umbrella" },
       infoText: "Precipitation:",
     },
     {
@@ -164,7 +164,7 @@ const MainWeatherCard = () => {
         weatherData?.current.surface_pressure,
         weatherData?.current_units.surface_pressure,
       ],
-      icon: Barometer,
+      icon: { src: Barometer, name: "Barometer" },
       infoText: "Pressure:",
     },
     {
@@ -172,12 +172,15 @@ const MainWeatherCard = () => {
         weatherData?.current.cloud_cover,
         weatherData?.current_units.cloud_cover,
       ],
-      icon: Cloudy,
+      icon: { src: Cloudy, name: "Cloud" },
       infoText: "Cloud cover:",
     },
     {
       data: ["", ""],
-      icon: getUVIndexIcon(weatherData?.daily.uv_index_max[0]),
+      icon: {
+        src: getUVIndexIcon(weatherData?.daily.uv_index_max[0]),
+        name: "UV Index",
+      },
       infoText: "UV Index:",
     },
   ];
@@ -240,7 +243,13 @@ const MainWeatherCard = () => {
                         ? wmoCodes[weatherData.current.weather_code].day.image
                         : wmoCodes[weatherData.current.weather_code].night.image
                     }
-                    alt=""
+                    alt={`${
+                      weatherData.current.is_day
+                        ? wmoCodes[weatherData.current.weather_code].day
+                            .description
+                        : wmoCodes[weatherData.current.weather_code].night
+                            .description
+                    } icon`}
                   />
                 </Card.Section>
                 <Flex
@@ -261,13 +270,21 @@ const MainWeatherCard = () => {
                     </Text>
                   </Flex>
                   <Flex align="center" direction="row">
-                    <img style={{ width: "2rem" }} src={Sunrise} alt="" />
+                    <img
+                      style={{ width: "2rem" }}
+                      src={Sunrise}
+                      alt="Sunrise icon"
+                    />
                     <Text size="sm" c="white">
                       {`${getTime(weatherData.daily.sunrise[0])} - ${getTime(
                         weatherData.daily.sunset[0]
                       )}`}
                     </Text>
-                    <img style={{ width: "2rem" }} src={Sunset} alt="" />
+                    <img
+                      style={{ width: "2rem" }}
+                      src={Sunset}
+                      alt="Sunset icon"
+                    />
                   </Flex>
                 </Flex>
               </Flex>

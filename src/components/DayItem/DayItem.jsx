@@ -26,7 +26,13 @@ const DayItem = ({ date, weatherData, index }) => {
                 ? wmoCodes[weatherData.daily.weather_code[index]].day.image
                 : wmoCodes[weatherData.daily.weather_code[index]].night.image
             }
-            alt=""
+            alt={`${
+              weatherData.is_day
+                ? wmoCodes[weatherData.daily.weather_code[index]].day
+                    .description
+                : wmoCodes[weatherData.daily.weather_code[index]].night
+                    .description
+            } icon`}
           />
           <div className={classes.weather_temperature}>
             <Text size={"xl"} fw={700} c="white">
@@ -38,17 +44,29 @@ const DayItem = ({ date, weatherData, index }) => {
             </Text>
           </div>
           <Flex align="center">
-            <img className={classes.weather_icon_info} src={Raindrop} alt="" />
+            <img
+              className={classes.weather_icon_info}
+              src={Raindrop}
+              alt="Raindrop icon"
+            />
             <Text size="sm">{`${weatherData.daily.precipitation_sum[index]}${weatherData.daily_units.precipitation_sum}`}</Text>
           </Flex>
           <Flex align="center">
-            <img className={classes.weather_icon_info} src={Sunrise} alt="" />
+            <img
+              className={classes.weather_icon_info}
+              src={Sunrise}
+              alt="Sunrise icon"
+            />
             <Text size="sm">
               {`${getTime(weatherData.daily.sunrise[index])} - ${getTime(
                 weatherData.daily.sunset[index]
               )}`}
             </Text>
-            <img className={classes.weather_icon_info} src={Sunset} alt="" />
+            <img
+              className={classes.weather_icon_info}
+              src={Sunset}
+              alt="Sunset icon"
+            />
           </Flex>
         </Flex>
       </Paper>

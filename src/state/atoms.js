@@ -4,7 +4,6 @@ const localStorageEffect =
   (key) =>
   ({ setSelf, onSet }) => {
     const savedValue = localStorage.getItem(key);
-    console.log(savedValue);
     if (savedValue !== null) {
       setSelf(JSON.parse(savedValue));
     }

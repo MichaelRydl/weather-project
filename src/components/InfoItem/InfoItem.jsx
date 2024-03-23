@@ -7,7 +7,11 @@ const InfoItem = ({ data, infoText, icon }) => {
       <Text size="lg" c="gray">
         {infoText}
       </Text>
-      <img className={classes.weather_icon_info} src={icon} alt="" />
+      <img
+        className={classes.weather_icon_info}
+        src={icon.src}
+        alt={`${icon.name} icon`}
+      />
       <Text size="xl">{`${data[0]}${data[1]}`}</Text>
     </Flex>
   );
