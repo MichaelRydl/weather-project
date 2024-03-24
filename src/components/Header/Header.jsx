@@ -178,7 +178,7 @@ const Header = () => {
             size="input-sm"
             radius="xl"
             color="gray"
-            aria-label="Search"
+            aria-label="Search icon"
             disabled={searchedLocation === ""}
             onClick={handleSetLocation}
           >
