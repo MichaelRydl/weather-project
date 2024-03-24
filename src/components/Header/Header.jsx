@@ -179,8 +179,8 @@ const Header = () => {
             radius="xl"
             color="gray"
             aria-label="Search"
-            onClick={handleSetLocation}
             disabled={searchedLocation === ""}
+            onClick={handleSetLocation}
           >
             <IconSearch
               style={{ width: "1.1rem", height: "1.1rem" }}
