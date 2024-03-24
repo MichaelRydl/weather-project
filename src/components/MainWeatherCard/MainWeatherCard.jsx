@@ -1,10 +1,11 @@
-import { Fragment, useEffect, useRef } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import {
   ActionIcon,
   Badge,
   Card,
   Divider,
+  Indicator,
   Flex,
   Loader,
   Text,
@@ -60,6 +61,7 @@ const MainWeatherCard = () => {
   const [weatherData, setWeatherData] = useRecoilState(weatherDataState);
   const [geolocationData, setGeolocationData] =
     useRecoilState(geolocationDataState);
+  const [visibleIndex, setVisibleIndex] = useState(0);
   const scrollContainerRef = useRef(null);
 
   useEffect(() => {
@@ -150,6 +152,26 @@ const MainWeatherCard = () => {
       scrollContainer.removeEventListener("wheel", handleWheel);
     };
   }, []);
+
+  useEffect(() => {
+    const scrollToCurrentHour = () => {
+      const currentHour = new Date().getHours();
+      const forecastItems = scrollContainerRef.current.childNodes;
+
+      const currentHourForecastItem = forecastItems[currentHour];
+
+      if (currentHourForecastItem) {
+        setVisibleIndex(currentHour);
+
+        currentHourForecastItem.scrollIntoView({
+          behavior: "smooth",
+          inline: "center",
+        });
+      }
+    };
+
+    scrollToCurrentHour();
+  }, [weatherData]);
 
   const addFavouriteLocation = () => {
     if (
@@ -413,7 +435,12 @@ const MainWeatherCard = () => {
       >
         {weatherData ? (
           hourlyData(weatherData.hourly).map((data, i) => (
-            <div key={i} className={classes.hourly_forecast_item}>
+            <div
+              key={i}
+              className={`${classes.hourly_forecast_item} ${
+                visibleIndex === i ? classes.current_forecast_item : ""
+              }`}
+            >
               <img
                 src={
                   data.isDay
@@ -433,7 +460,7 @@ const MainWeatherCard = () => {
             </div>
           ))
         ) : (
-          <Flex h="100%" align="center" justify="center">
+          <Flex w="100%" h="100%" align="center" justify="center">
             <Loader w="100%" color="gray" type="dots" size={50} />
           </Flex>
         )}

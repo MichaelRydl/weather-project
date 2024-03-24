@@ -66,12 +66,23 @@
 }
 
 .hourly_forecast_item {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem;
-  border-radius: 8px;
+}
+
+.current_forecast_item::before {
+  content: "";
+  width: 100%;
+  height: 2px;
+  background: lightgray;
+  position: absolute;
+  border-radius: 4px;
+  top: -0.5rem;
+  left: 0;
 }
 
 .hourly_forecast_item img {
