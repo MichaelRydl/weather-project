@@ -16,7 +16,6 @@ import { IconStar } from "@tabler/icons-react";
 import { getTime, isToday } from "../../utils";
 import { wmoCodes } from "../../../wmo-codes";
 import axios from "axios";
-import classes from "./MainWeatherCard.module.css";
 import Sunrise from "../../assets/icons/line/sunrise.svg";
 import Sunset from "../../assets/icons/line/sunset.svg";
 import Wind from "../../assets/icons/wind.svg";
@@ -26,6 +25,7 @@ import Barometer from "../../assets/icons/barometer.svg";
 import Cloudy from "../../assets/icons/cloudy.svg";
 import DayItem from "../DayItem/DayItem";
 import InfoItem from "../InfoItem/InfoItem";
+import classes from "./MainWeatherCard.module.css";
 import {
   favouriteLocationsState,
   weatherDataState,
