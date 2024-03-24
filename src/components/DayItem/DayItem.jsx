@@ -10,13 +10,8 @@ const DayItem = ({ date, weatherData, index }) => {
   return (
     <div className={classes.wrapper}>
       <Paper shadow="xl" radius="xl" p="lg">
-        <Flex
-          align={"center"}
-          justify={"center"}
-          direction={"column"}
-          gap={"sm"}
-        >
-          <Text size={"sm"} c="gray">
+        <Flex align="center" justify="center" direction="column" gap="sm">
+          <Text size="sm" c="gray">
             {getNameOfTheDay(date)}
           </Text>
           <img
@@ -35,7 +30,7 @@ const DayItem = ({ date, weatherData, index }) => {
             } icon`}
           />
           <div className={classes.weather_temperature}>
-            <Text size={"xl"} fw={700} c="white">
+            <Text size="xl" fw={700} c="white">
               {Math.round(weatherData.daily.temperature_2m_min[index])} /{" "}
               {Math.round(weatherData.daily.temperature_2m_max[index])}
               <sup style={{ fontSize: "0.8rem" }}>

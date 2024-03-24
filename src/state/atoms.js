@@ -25,16 +25,6 @@ export const geolocationDataState = atom({
   default: null,
 });
 
-export const forecastDataState = atom({
-  key: "forecastDataState",
-  default: [],
-});
-
-export const weatherDataListState = atom({
-  key: "weatherDataListState",
-  default: [],
-});
-
 export const weatherLocationState = atom({
   key: "weatherLocationState",
   default: null,

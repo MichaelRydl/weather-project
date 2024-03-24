@@ -91,6 +91,48 @@ const MainWeatherCard = () => {
     setGeolocationData,
   ]);
 
+  useEffect(() => {
+    const updateWeatherDataForFavoriteLocations = async () => {
+      for (const favoriteLocation of favouriteLocations) {
+        try {
+          const geolocationResponse = await axios.get(
+            `https://geocoding-api.open-meteo.com/v1/search?name=${favoriteLocation.name}&count=1&language=en&format=json`
+          );
+
+          const { latitude, longitude } = geolocationResponse.data.results[0];
+
+          const weatherResponse = await axios.get(
+            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,is_day,precipitation,weather_code,precipitation&daily=temperature_2m_max&timezone=auto&temperature_unit=${temperatureUnit}`
+          );
+
+          setFavouriteLocations((prevState) => {
+            return prevState.map((location) => {
+              if (location.name === favoriteLocation.name) {
+                return {
+                  ...location,
+                  weatherData: {
+                    weatherCode: weatherResponse.data.current.weather_code,
+                    temperature: weatherResponse.data.current.temperature_2m,
+                    temperatureUnit:
+                      weatherResponse.data.daily_units.temperature_2m_max,
+                    isDay: weatherResponse.data.current.is_day,
+                  },
+                };
+              }
+              return location;
+            });
+          });
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    };
+
+    if (favouriteLocations.length > 0) {
+      updateWeatherDataForFavoriteLocations();
+    }
+  }, [weatherData, setFavouriteLocations]);
+
   const addFavouriteLocation = () => {
     if (
       favouriteLocations.some(
