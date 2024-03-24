@@ -431,7 +431,11 @@ const MainWeatherCard = () => {
                     ? wmoCodes[data.weatherCode].day.image
                     : wmoCodes[data.weatherCode].night.image
                 }
-                alt=""
+                alt={`${
+                  data.isDay
+                    ? wmoCodes[data.weatherCode].day.description
+                    : wmoCodes[data.weatherCode].night.description
+                } icon`}
               />
               <Badge size="lg" color="gray" variant="default">
                 <Text c="gray" fw={700}>{`${Math.round(data.temperature)}${
