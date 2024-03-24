@@ -25,7 +25,7 @@ const FavouriteList = () => {
     ev.stopPropagation();
 
     setFavouriteLocations((prevItems) => {
-      return prevItems.filter((_item, index) => index !== indexToRemove);
+      return prevItems.filter((_, index) => index !== indexToRemove);
     });
   };
 
