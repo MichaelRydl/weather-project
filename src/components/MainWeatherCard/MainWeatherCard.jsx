@@ -5,7 +5,6 @@ import {
   Badge,
   Card,
   Divider,
-  Indicator,
   Flex,
   Loader,
   Text,
@@ -154,23 +153,8 @@ const MainWeatherCard = () => {
   }, []);
 
   useEffect(() => {
-    const scrollToCurrentHour = () => {
-      const currentHour = new Date().getHours();
-      const forecastItems = scrollContainerRef.current.childNodes;
-
-      const currentHourForecastItem = forecastItems[currentHour];
-
-      if (currentHourForecastItem) {
-        setVisibleIndex(currentHour);
-
-        currentHourForecastItem.scrollIntoView({
-          behavior: "smooth",
-          inline: "center",
-        });
-      }
-    };
-
-    scrollToCurrentHour();
+    const currentHour = new Date().getHours();
+    setVisibleIndex(currentHour);
   }, [weatherData]);
 
   const addFavouriteLocation = () => {
