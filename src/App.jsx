@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import cx from "clsx";
 import {
   Divider,
   MantineThemeProvider,
@@ -7,6 +6,7 @@ import {
 } from "@mantine/core";
 import { useSetRecoilState } from "recoil";
 import { weatherLocationState } from "./state/atoms";
+import cx from "clsx";
 import classes from "./App.module.css";
 import Header from "./components/Header/Header";
 import MainWeatherCard from "./components/MainWeatherCard/MainWeatherCard";

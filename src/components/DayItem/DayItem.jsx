@@ -1,6 +1,6 @@
 import { Flex, Paper, Text } from "@mantine/core";
 import { wmoCodes } from "../../../wmo-codes";
-import { getTime, getNameOfTheDay } from "../../utils/utils";
+import { getTime, getNameOfTheDay } from "../../utils";
 import Raindrop from "../../assets/icons/raindrop.svg";
 import Sunrise from "../../assets/icons/sunrise.svg";
 import Sunset from "../../assets/icons/sunset.svg";

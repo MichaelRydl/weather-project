@@ -13,7 +13,7 @@ import {
 } from "@mantine/core";
 import { LineChart } from "@mantine/charts";
 import { IconStar } from "@tabler/icons-react";
-import { getTime, isToday } from "../../utils/utils";
+import { getTime, isToday } from "../../utils";
 import { wmoCodes } from "../../../wmo-codes";
 import axios from "axios";
 import classes from "./MainWeatherCard.module.css";
@@ -96,11 +96,11 @@ const MainWeatherCard = () => {
   ]);
 
   useEffect(() => {
-    const updateWeatherDataForFavoriteLocations = async () => {
-      for (const favoriteLocation of favouriteLocations) {
+    const updateWeatherDataForFavouriteLocations = async () => {
+      for (const favouriteLocation of favouriteLocations) {
         try {
           const geolocationResponse = await axios.get(
-            `https://geocoding-api.open-meteo.com/v1/search?name=${favoriteLocation.name}&count=1&language=en&format=json`
+            `https://geocoding-api.open-meteo.com/v1/search?name=${favouriteLocation.name}&count=1&language=en&format=json`
           );
 
           const { latitude, longitude } = geolocationResponse.data.results[0];
@@ -111,7 +111,7 @@ const MainWeatherCard = () => {
 
           setFavouriteLocations((prevState) => {
             return prevState.map((location) => {
-              if (location.name === favoriteLocation.name) {
+              if (location.name === favouriteLocation.name) {
                 return {
                   ...location,
                   weatherData: {
@@ -133,7 +133,7 @@ const MainWeatherCard = () => {
     };
 
     if (favouriteLocations.length > 0) {
-      updateWeatherDataForFavoriteLocations();
+      updateWeatherDataForFavouriteLocations();
     }
   }, [weatherData]);
 
