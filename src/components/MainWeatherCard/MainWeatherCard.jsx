@@ -1,7 +1,8 @@
-import { Fragment, useEffect } from "react";
+import { Fragment, useEffect, useRef } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import {
   ActionIcon,
+  Badge,
   Card,
   Divider,
   Flex,
@@ -59,6 +60,7 @@ const MainWeatherCard = () => {
   const [weatherData, setWeatherData] = useRecoilState(weatherDataState);
   const [geolocationData, setGeolocationData] =
     useRecoilState(geolocationDataState);
+  const scrollContainerRef = useRef(null);
 
   useEffect(() => {
     const fetchWeatherData = async () => {
@@ -72,7 +74,7 @@ const MainWeatherCard = () => {
         const { latitude, longitude } = geolocationResponse.data.results[0];
 
         const weatherResponse = await axios.get(
-          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,surface_pressure,wind_speed_10m&hourly=sunshine_duration,precipitation&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum,uv_index_max&timezone=auto&temperature_unit=${temperatureUnit}&wind_speed_unit=${windSpeedUnit}&precipitation_unit=${precipitationUnit}`
+          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,surface_pressure,wind_speed_10m&hourly=sunshine_duration,precipitation,weather_code,temperature_2m,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum,uv_index_max&timezone=auto&temperature_unit=${temperatureUnit}&wind_speed_unit=${windSpeedUnit}&precipitation_unit=${precipitationUnit}`
         );
 
         setWeatherData(weatherResponse.data);
@@ -132,7 +134,22 @@ const MainWeatherCard = () => {
     if (favouriteLocations.length > 0) {
       updateWeatherDataForFavoriteLocations();
     }
-  }, [weatherData, setFavouriteLocations]);
+  }, [weatherData]);
+
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+
+    const handleWheel = (ev) => {
+      ev.preventDefault();
+      scrollContainer.scrollLeft += ev.deltaY;
+    };
+
+    scrollContainer.addEventListener("wheel", handleWheel);
+
+    return () => {
+      scrollContainer.removeEventListener("wheel", handleWheel);
+    };
+  }, []);
 
   const addFavouriteLocation = () => {
     if (
@@ -248,6 +265,20 @@ const MainWeatherCard = () => {
       });
     }
     return hourlyPrecipitation;
+  };
+
+  const hourlyData = (hourlyData) => {
+    let newHourlyData = [];
+    for (let i = 0; i < 25; i++) {
+      newHourlyData.push({
+        time: `${i}h`,
+        temperature: hourlyData.temperature_2m[i],
+        temperatureUnit: weatherData.current_units.temperature_2m,
+        weatherCode: hourlyData.weather_code[i],
+        isDay: hourlyData.is_day[i],
+      });
+    }
+    return newHourlyData;
   };
 
   return (
@@ -375,6 +406,41 @@ const MainWeatherCard = () => {
           )}
         </Paper>
       </div>
+      <Flex
+        className={classes.hourly_forecast_wrapper}
+        gap="1rem"
+        ref={scrollContainerRef}
+      >
+        {weatherData ? (
+          hourlyData(weatherData.hourly).map((data, i) => (
+            <div key={i} className={classes.hourly_forecast_item}>
+              <img
+                src={
+                  data.isDay
+                    ? wmoCodes[data.weatherCode].day.image
+                    : wmoCodes[data.weatherCode].night.image
+                }
+                alt=""
+              />
+              <Badge size="lg" color="gray" variant="default">
+                <Text c="gray" fw={700}>{`${Math.round(data.temperature)}${
+                  data.temperatureUnit
+                }`}</Text>
+              </Badge>
+              <Text size="xs" c="gray" fw={700} mt="1rem">
+                {data.time}
+              </Text>
+            </div>
+          ))
+        ) : (
+          <Flex h="100%" align="center" justify="center">
+            <Loader w="100%" color="gray" type="dots" size={50} />
+          </Flex>
+        )}
+      </Flex>
+      <Text size="lg" c="gray" ta="center">
+        Forecast for next 7 days:
+      </Text>
       <div className={classes.wrapper_forecast}>
         <Flex justify="center" gap="1rem" wrap="wrap">
           {!isLoading && weatherData ? (

@@ -15,8 +15,6 @@
 }
 
 .wrapper_forecast {
-  grid-column: 1;
-  grid-row: 2;
   justify-self: center;
 }
 
@@ -57,4 +55,33 @@
   top: 10px;
   right: 10px;
   z-index: 1000;
+}
+
+.hourly_forecast_wrapper {
+  width: 100%;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  overflow: scroll hidden;
+}
+
+.hourly_forecast_item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+}
+
+.hourly_forecast_item img {
+  border: 2px solid lightblue;
+  width: 4rem;
+  padding: 0.5rem;
+  background: linear-gradient(
+    90deg,
+    var(--mantine-color-blue-filled) 0%,
+    var(--mantine-color-cyan-filled) 100%
+  );
+  border-radius: 50%;
 }
