@@ -7,6 +7,7 @@ import {
   Flex,
   Loader,
   Text,
+  Tooltip,
   Paper,
 } from "@mantine/core";
 import { LineChart } from "@mantine/charts";
@@ -356,11 +357,16 @@ const MainWeatherCard = () => {
                   {i !== infoItemData.length - 1 && <Divider w="100%" />}
                 </Fragment>
               ))}
-              <Text size="xs" c="gray" mt="xl">
-                Last update:{" "}
-                {`${isToday(weatherData.current.time)} at
+              <Tooltip
+                label="The date and time are displayed according to the local time zone."
+                color="gray"
+              >
+                <Text size="xs" c="gray" mt="xl">
+                  Last update:{" "}
+                  {`${isToday(weatherData.current.time)} at
                 ${getTime(weatherData.current.time)}`}
-              </Text>
+                </Text>
+              </Tooltip>
             </Flex>
           ) : (
             <Flex h="100%" align="center" justify="center">
