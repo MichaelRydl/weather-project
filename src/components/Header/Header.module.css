@@ -33,6 +33,31 @@
   height: rem(22px);
 }
 
+/* Give the search field more breathing room as the header narrows. */
+@mixin smaller-than $mantine-breakpoint-md {
+  .header_search_input {
+    width: 50%;
+  }
+}
+
+/* Mobile: keep logo + actions on the top row and drop the search field onto
+   its own full-width row underneath. */
+@mixin smaller-than $mantine-breakpoint-sm {
+  .header {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .search_location_form {
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  .header_search_input {
+    width: 100%;
+  }
+}
+
 .dark {
   @mixin dark {
     display: none;

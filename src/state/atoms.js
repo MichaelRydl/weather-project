@@ -28,6 +28,7 @@ export const geolocationDataState = atom({
 export const weatherLocationState = atom({
   key: "weatherLocationState",
   default: null,
+  effects: [localStorageEffect("weatherLocation")],
 });
 
 export const favouriteLocationsState = atom({
