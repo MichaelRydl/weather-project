@@ -2,14 +2,17 @@ import { useEffect, useState } from "react";
 import { useRecoilState, useSetRecoilState } from "recoil";
 import {
   ActionIcon,
+  Autocomplete,
+  CloseButton,
   Flex,
   Menu,
   SegmentedControl,
   Text,
-  TextInput,
   useMantineColorScheme,
   useComputedColorScheme,
 } from "@mantine/core";
+import { useDebouncedValue } from "@mantine/hooks";
+import axios from "axios";
 import {
   IconSun,
   IconMoon,
@@ -19,6 +22,7 @@ import {
 } from "@tabler/icons-react";
 import cx from "clsx";
 import classes from "./Header.module.css";
+import { getCityFromCoords } from "../../utils";
 import ClearDay from "../../assets/icons/clear-day.svg?react";
 import Cloudy from "../../assets/icons/cloudy.svg?react";
 import Rain from "../../assets/icons/rain.svg?react";
@@ -32,8 +36,6 @@ import {
   isLoadingState,
 } from "../../state/atoms";
 
-const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-
 const Header = () => {
   const icons = [ClearDay, Cloudy, Rain, Snow, LigtningBolt];
   const setLocation = useSetRecoilState(weatherLocationState);
@@ -46,6 +48,8 @@ const Header = () => {
   );
   const [logoIcon, setLogoIcon] = useState(0);
   const [searchedLocation, setSearchedLocation] = useState("");
+  const [citySuggestions, setCitySuggestions] = useState([]);
+  const [debouncedSearch] = useDebouncedValue(searchedLocation, 300);
   const { setColorScheme } = useMantineColorScheme();
   const computedColorScheme = useComputedColorScheme("light", {
     getInitialValueInEffect: true,
@@ -58,6 +62,41 @@ const Header = () => {
 
     return () => clearInterval(interval);
   }, [icons.length]);
+
+  // Fetch city name suggestions from the (keyless) open-meteo geocoding API as
+  // the user types, so they can pick from real cities worldwide.
+  useEffect(() => {
+    const query = debouncedSearch.trim();
+    if (query.length < 2) {
+      setCitySuggestions([]);
+      return;
+    }
+
+    let active = true;
+    axios
+      .get(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
+          query
+        )}&count=10&language=en&format=json`
+      )
+      .then((response) => {
+        if (!active) return;
+        const results = response.data.results || [];
+        // Build "City, Region, Country" labels and drop duplicates, since the
+        // Autocomplete requires unique option values.
+        const labels = results.map((result) =>
+          [result.name, result.admin1, result.country].filter(Boolean).join(", ")
+        );
+        setCitySuggestions([...new Set(labels)]);
+      })
+      .catch(() => {
+        if (active) setCitySuggestions([]);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [debouncedSearch]);
 
   const logoIcons = () => {
     switch (logoIcon) {
@@ -75,43 +114,48 @@ const Header = () => {
   };
 
   const getCurrentLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(showLocation);
-      setIsLoading(true);
-    } else {
-      console.error("Geolocation is not supported by this browser.");
+    if (!navigator.geolocation) {
+      alert("Geolocation isn't supported by this browser.");
+      return;
     }
 
-    function showLocation(position) {
-      const latitude = position.coords.latitude;
-      const longitude = position.coords.longitude;
-      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${API_KEY}`;
-
-      fetch(url)
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.results.length > 0) {
-            const output = {};
-
-            if (data.results.length > 0) {
-              data.results.map((result) => {
-                if (result.address_components.length > 0) {
-                  result.address_components.map((address) => {
-                    if (address.types[0]) {
-                      if (!output[address.types[0]]) {
-                        output[address.types[0]] = address.long_name;
-                      }
-                    }
-                  });
-                }
-              });
-            }
-            setLocation(output.locality);
-            setIsLoading(false);
-          }
-        })
-        .catch((error) => console.log(error));
+    // Browsers only expose geolocation in a secure context (HTTPS or
+    // localhost). On a phone opening the dev server over http://<LAN-IP> the
+    // permission prompt never appears, so explain it instead of failing silently.
+    if (!window.isSecureContext) {
+      alert(
+        "Location needs a secure (HTTPS) connection. On your computer use http://localhost, or open the app over HTTPS on your phone. You can still search for a city by name."
+      );
+      return;
     }
+
+    setIsLoading(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const city = await getCityFromCoords(
+            position.coords.latitude,
+            position.coords.longitude
+          );
+          if (city) setLocation(city);
+        } catch (error) {
+          console.error("Failed to determine location:", error);
+          alert("Couldn't determine your city from your location. Try searching by name.");
+        } finally {
+          setIsLoading(false);
+        }
+      },
+      (error) => {
+        console.error("Geolocation error:", error.message);
+        setIsLoading(false);
+        alert(
+          error.code === error.PERMISSION_DENIED
+            ? "Location access is blocked for this site. Allow it in your browser settings and try again."
+            : "Couldn't get your location. Try searching for a city by name."
+        );
+      }
+    );
   };
 
   const handleTemperatureUnitChange = (value) => {
@@ -126,8 +170,18 @@ const Header = () => {
     setPrecipitationUnit(value);
   };
 
-  const handleSearchLocation = (locationValue) => {
-    setSearchedLocation(locationValue);
+  const handleSearchLocation = (value) => {
+    // Picking a suggestion makes Mantine emit the full "City, Region, Country"
+    // label here — treat that as a selection: search by the city name and reset
+    // the field so it's ready for the next search.
+    if (citySuggestions.includes(value)) {
+      setLocation(value.split(",")[0].trim());
+      setSearchedLocation("");
+      setCitySuggestions([]);
+      return;
+    }
+
+    setSearchedLocation(value);
   };
 
   const handleSetLocation = (ev) => {
@@ -135,6 +189,7 @@ const Header = () => {
 
     setLocation(searchedLocation);
     setSearchedLocation("");
+    setCitySuggestions([]);
   };
 
   return (
@@ -150,15 +205,33 @@ const Header = () => {
         onSubmit={handleSetLocation}
       >
         <Flex w="100%" gap="xs" align="center" justify="center">
-          <TextInput
+          <Autocomplete
             className={classes.header_search_input}
             radius="xl"
             size="sm"
             placeholder="Search city"
-            onChange={(ev) => handleSearchLocation(ev.target.value)}
+            data={citySuggestions}
             value={searchedLocation}
+            onChange={handleSearchLocation}
+            filter={({ options }) => options}
+            comboboxProps={{ withinPortal: true }}
+            rightSectionPointerEvents="auto"
+            rightSection={
+              searchedLocation ? (
+                <CloseButton
+                  size="sm"
+                  radius="xl"
+                  aria-label="Clear search"
+                  onClick={() => {
+                    setSearchedLocation("");
+                    setCitySuggestions([]);
+                  }}
+                />
+              ) : null
+            }
             leftSection={
               <ActionIcon
+                type="button"
                 variant="subtle"
                 size="input-sm"
                 radius="xl"

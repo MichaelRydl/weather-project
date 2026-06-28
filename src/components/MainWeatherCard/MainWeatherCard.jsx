@@ -1,7 +1,8 @@
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import {
   ActionIcon,
+  Alert,
   Badge,
   Card,
   Divider,
@@ -12,7 +13,13 @@ import {
   Paper,
 } from "@mantine/core";
 import { LineChart } from "@mantine/charts";
-import { IconStar } from "@tabler/icons-react";
+import { useMediaQuery } from "@mantine/hooks";
+import {
+  IconStar,
+  IconStarFilled,
+  IconAlertTriangle,
+  IconShieldCheck,
+} from "@tabler/icons-react";
 import { getTime, isToday } from "../../utils";
 import { wmoCodes } from "../../../wmo-codes";
 import axios from "axios";
@@ -60,8 +67,10 @@ const MainWeatherCard = () => {
   const [weatherData, setWeatherData] = useRecoilState(weatherDataState);
   const [geolocationData, setGeolocationData] =
     useRecoilState(geolocationDataState);
-  const [visibleIndex, setVisibleIndex] = useState(0);
   const scrollContainerRef = useRef(null);
+  // Below the md breakpoint the layout stacks, so the alerts sit between the
+  // hero card and the detail tiles; on wider screens they go below both.
+  const isMobile = useMediaQuery("(max-width: 61.99em)");
 
   useEffect(() => {
     const fetchWeatherData = async () => {
@@ -139,6 +148,9 @@ const MainWeatherCard = () => {
 
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
+    // The hourly strip isn't rendered while there's no location (empty state),
+    // so the ref can be null — bail out instead of crashing.
+    if (!scrollContainer) return;
 
     const handleWheel = (ev) => {
       ev.preventDefault();
@@ -150,20 +162,18 @@ const MainWeatherCard = () => {
     return () => {
       scrollContainer.removeEventListener("wheel", handleWheel);
     };
-  }, []);
+  }, [location]);
 
-  useEffect(() => {
-    const currentHour = new Date().getHours();
-    setVisibleIndex(currentHour);
-  }, [weatherData]);
+  const isFavourite = favouriteLocations.some(
+    (location) => location.name === geolocationData?.name
+  );
 
-  const addFavouriteLocation = () => {
-    if (
-      favouriteLocations.some(
-        (location) => location.name === geolocationData.name
-      )
-    ) {
-      return alert(`${geolocationData.name} is already in the favourite list.`);
+  const toggleFavouriteLocation = () => {
+    if (isFavourite) {
+      setFavouriteLocations((prevState) =>
+        prevState.filter((location) => location.name !== geolocationData.name)
+      );
+      return;
     }
 
     setFavouriteLocations((prevState) => [
@@ -198,6 +208,101 @@ const MainWeatherCard = () => {
   const getUVIndexIcon = (uvIndex) => {
     const index = Math.min(Math.floor(uvIndex) - 1, UVIndexIcons.length - 1);
     return UVIndexIcons[index < 0 ? 0 : index];
+  };
+
+  // open-meteo doesn't return official warnings, so derive alerts from the
+  // forecast itself (severe conditions, extreme values).
+  const getWeatherAlerts = () => {
+    const alerts = [];
+    const { weather_code, wind_speed_10m } = weatherData.current;
+    const temperatureUnit = weatherData.current_units.temperature_2m;
+    const windUnit = weatherData.current_units.wind_speed_10m;
+    const uvIndex = weatherData.daily.uv_index_max[0];
+    const dailyHigh = weatherData.daily.temperature_2m_max[0];
+    const dailyLow = weatherData.daily.temperature_2m_min[0];
+
+    if ([95, 96, 99].includes(weather_code)) {
+      alerts.push({
+        color: "red",
+        title: "Thunderstorm",
+        message:
+          "Thunderstorms in the area. Stay indoors and avoid open spaces.",
+      });
+    }
+    if ([65, 82].includes(weather_code)) {
+      alerts.push({
+        color: "yellow",
+        title: "Heavy rain",
+        message: "Heavy rainfall expected. Watch for local flooding.",
+      });
+    }
+    if ([66, 67].includes(weather_code)) {
+      alerts.push({
+        color: "yellow",
+        title: "Freezing rain",
+        message: "Freezing rain may cause icy, slippery surfaces.",
+      });
+    }
+    if ([75, 86].includes(weather_code)) {
+      alerts.push({
+        color: "blue",
+        title: "Heavy snow",
+        message: "Heavy snowfall expected. Travel may be difficult.",
+      });
+    }
+
+    if (uvIndex >= 8) {
+      alerts.push({
+        color: "orange",
+        title: "Very high UV",
+        message: `UV index reaches ${Math.round(
+          uvIndex
+        )}. Use sun protection outdoors.`,
+      });
+    }
+
+    const isFahrenheit = temperatureUnit.includes("F");
+    if (dailyHigh >= (isFahrenheit ? 95 : 35)) {
+      alerts.push({
+        color: "red",
+        title: "Extreme heat",
+        message: `Highs around ${Math.round(
+          dailyHigh
+        )}${temperatureUnit} today. Stay hydrated and avoid the midday sun.`,
+      });
+    } else if (dailyHigh >= (isFahrenheit ? 86 : 30)) {
+      alerts.push({
+        color: "orange",
+        title: "High temperature",
+        message: `Highs around ${Math.round(
+          dailyHigh
+        )}${temperatureUnit} today. Stay hydrated and take it easy in the heat.`,
+      });
+    }
+    if (dailyLow <= (isFahrenheit ? 14 : -10)) {
+      alerts.push({
+        color: "blue",
+        title: "Extreme cold",
+        message: `Lows around ${Math.round(
+          dailyLow
+        )}${temperatureUnit} today. Dress warmly to avoid frostbite.`,
+      });
+    }
+
+    const windThreshold = { "km/h": 60, "m/s": 17, "mp/h": 38, kn: 33 }[
+      windUnit
+    ];
+    if (windThreshold && wind_speed_10m >= windThreshold) {
+      alerts.push({
+        color: "yellow",
+        title: "Strong wind",
+        message: `Winds up to ${Math.round(
+          wind_speed_10m
+        )} ${windUnit}. Secure loose objects outdoors.`,
+      });
+    }
+
+    return alerts;
   };
 
   const infoItemData = [
@@ -273,19 +378,87 @@ const MainWeatherCard = () => {
     return hourlyPrecipitation;
   };
 
-  const hourlyData = (hourlyData) => {
-    let newHourlyData = [];
-    for (let i = 0; i < 25; i++) {
+  const hourlyData = (hourly) => {
+    // Start at the location's current hour so "now" is the first (left-most)
+    // item, then show the next hours to scroll through. The hourly arrays are
+    // aligned to local midnight, so the current hour is the index into them.
+    const currentHour = Number(getTime(weatherData.current.time).split(":")[0]);
+    const hoursToShow = 24;
+    const newHourlyData = [];
+
+    for (let i = currentHour; i < currentHour + hoursToShow; i++) {
+      if (hourly.temperature_2m[i] === undefined) break;
+
       newHourlyData.push({
-        time: `${i}h`,
-        temperature: hourlyData.temperature_2m[i],
+        time: getTime(hourly.time[i]),
+        temperature: hourly.temperature_2m[i],
         temperatureUnit: weatherData.current_units.temperature_2m,
-        weatherCode: hourlyData.weather_code[i],
-        isDay: hourlyData.is_day[i],
+        weatherCode: hourly.weather_code[i],
+        isDay: hourly.is_day[i],
       });
     }
+
     return newHourlyData;
   };
+
+  // No location yet (geolocation denied/unavailable, or none saved): show a
+  // search prompt instead of an endless loader.
+  if (!location) {
+    return (
+      <Flex
+        className={classes.empty_state}
+        direction="column"
+        align="center"
+        justify="center"
+        gap="sm"
+      >
+        <Text size="xl" fw={700} ta="center">
+          Search for a city
+        </Text>
+        <Text c="dimmed" ta="center" maw={420}>
+          Type a city name in the search bar above, or allow location access to
+          detect your position automatically.
+        </Text>
+      </Flex>
+    );
+  }
+
+  const weatherAlerts =
+    !isLoading && weatherData ? getWeatherAlerts() : [];
+
+  const alertSection = !isLoading && weatherData && (
+    <div className={classes.alerts_section}>
+      <Text size="lg" c="gray" ta="center" className={classes.section_label}>
+        Weather alerts
+      </Text>
+      {weatherAlerts.length > 0 ? (
+        <Flex direction="column" gap="sm">
+          {weatherAlerts.map((alert, i) => (
+            <Alert
+              key={i}
+              variant="light"
+              radius="md"
+              color={alert.color}
+              title={alert.title}
+              icon={<IconAlertTriangle />}
+            >
+              {alert.message}
+            </Alert>
+          ))}
+        </Flex>
+      ) : (
+        <Alert
+          variant="light"
+          radius="md"
+          color="green"
+          title="No active alerts"
+          icon={<IconShieldCheck />}
+        >
+          There are no weather warnings for this location right now.
+        </Alert>
+      )}
+    </div>
+  );
 
   return (
     <div className={classes.wrapper}>
@@ -299,23 +472,31 @@ const MainWeatherCard = () => {
           <div className={classes.card_overlay}>
             <div
               className={classes.favourite_icon_wrapper}
-              onClick={addFavouriteLocation}
+              onClick={toggleFavouriteLocation}
             >
               <ActionIcon
                 variant="light"
                 radius="xl"
                 color="white"
-                aria-label="Add to favourites"
+                aria-label={
+                  isFavourite ? "Remove from favourites" : "Add to favourites"
+                }
               >
-                <IconStar
-                  style={{ width: "1.1rem", height: "1.1rem" }}
-                  stroke={1.5}
-                />
+                {isFavourite ? (
+                  <IconStarFilled
+                    style={{ width: "1.1rem", height: "1.1rem" }}
+                  />
+                ) : (
+                  <IconStar
+                    style={{ width: "1.1rem", height: "1.1rem" }}
+                    stroke={1.5}
+                  />
+                )}
               </ActionIcon>
             </div>
             {!isLoading && weatherData ? (
               <Flex mih="100%" justify="space-between">
-                <Card.Section>
+                <Card.Section className={classes.weather_icon_section}>
                   <img
                     className={classes.weather_icon}
                     src={
@@ -375,15 +556,10 @@ const MainWeatherCard = () => {
             )}
           </div>
         </Card>
+        {isMobile && alertSection}
         <Paper shadow="xl" radius="xl" p="xl">
           {!isLoading && weatherData ? (
-            <Flex
-              w="100%"
-              h="100%"
-              direction="column"
-              align="center"
-              justify="center"
-            >
+            <div className={classes.info_panel}>
               {infoItemData.map((infoItem, i) => (
                 <Fragment key={i}>
                   <InfoItem
@@ -391,20 +567,27 @@ const MainWeatherCard = () => {
                     infoText={infoItem.infoText}
                     icon={infoItem.icon}
                   />
-                  {i !== infoItemData.length - 1 && <Divider w="100%" />}
+                  {i !== infoItemData.length - 1 && (
+                    <Divider w="100%" className={classes.info_divider} />
+                  )}
                 </Fragment>
               ))}
               <Tooltip
                 label="The date and time are displayed according to the local time zone."
                 color="gray"
               >
-                <Text size="xs" c="gray" mt="xl">
+                <Text
+                  size="xs"
+                  c="gray"
+                  mt="xl"
+                  className={classes.last_update}
+                >
                   Last update:{" "}
                   {`${isToday(weatherData.current.time)} at
                 ${getTime(weatherData.current.time)}`}
                 </Text>
               </Tooltip>
-            </Flex>
+            </div>
           ) : (
             <Flex h="100%" align="center" justify="center">
               <Loader w="100%" color="gray" type="dots" size={50} />
@@ -412,6 +595,14 @@ const MainWeatherCard = () => {
           )}
         </Paper>
       </div>
+      {!isMobile && alertSection}
+      <Text
+        className={`${classes.section_label} ${classes.mobile_only}`}
+        size="lg"
+        c="gray"
+      >
+        Hourly forecast
+      </Text>
       <Flex
         className={classes.hourly_forecast_wrapper}
         gap="1rem"
@@ -419,12 +610,7 @@ const MainWeatherCard = () => {
       >
         {weatherData ? (
           hourlyData(weatherData.hourly).map((data, i) => (
-            <div
-              key={i}
-              className={`${classes.hourly_forecast_item} ${
-                visibleIndex === i ? classes.current_forecast_item : ""
-              }`}
-            >
+            <div key={i} className={classes.hourly_forecast_item}>
               <img
                 src={
                   data.isDay
@@ -453,11 +639,16 @@ const MainWeatherCard = () => {
           </Flex>
         )}
       </Flex>
-      <Text size="lg" c="gray" ta="center">
+      <Text size="lg" c="gray" ta="center" className={classes.section_label}>
         Forecast for next 7 days:
       </Text>
       <div className={classes.wrapper_forecast}>
-        <Flex justify="center" gap="1rem" wrap="wrap">
+        <Flex
+          justify="center"
+          gap="1rem"
+          wrap="wrap"
+          className={classes.forecast_row}
+        >
           {!isLoading && weatherData ? (
             weatherData.daily.time.map((date, i) => (
               <DayItem
@@ -475,7 +666,13 @@ const MainWeatherCard = () => {
         </Flex>
       </div>
       <div>
-        <Text size="lg" c="gray" p="2rem 1rem 3rem 1rem" ta="center">
+        <Text
+          size="lg"
+          c="gray"
+          p="2rem 1rem 3rem 1rem"
+          ta="center"
+          className={classes.section_label}
+        >
           Sunshine duration for current day:
         </Text>
         {!isLoading && weatherData ? (
@@ -497,7 +694,13 @@ const MainWeatherCard = () => {
         )}
       </div>
       <div>
-        <Text size="lg" c="gray" p="2rem 1rem 3rem 1rem" ta="center">
+        <Text
+          size="lg"
+          c="gray"
+          p="2rem 1rem 3rem 1rem"
+          ta="center"
+          className={classes.section_label}
+        >
           Precipitation for current day:
         </Text>
         {!isLoading && weatherData ? (

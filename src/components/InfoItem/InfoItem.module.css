@@ -1,4 +1,51 @@
-.weather_icon_info {
+.item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.label {
+  color: var(--mantine-color-dimmed);
+  font-size: var(--mantine-font-size-lg);
+}
+
+.icon {
   width: 4rem;
   height: 4rem;
+}
+
+.value {
+  font-size: var(--mantine-font-size-xl);
+  color: var(--mantine-color-text);
+}
+
+/* Mobile: render each metric as a compact, scannable tile in a 2-column grid
+   instead of a tall list of full-width rows. */
+@mixin smaller-than $mantine-breakpoint-md {
+  .item {
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.9rem;
+    border-radius: 12px;
+    background: var(--mantine-color-default-hover);
+  }
+
+  /* The animated icon replaces the text label on mobile. */
+  .label {
+    display: none;
+  }
+
+  .icon {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  .value {
+    font-size: var(--mantine-font-size-xl);
+    font-weight: 700;
+  }
 }

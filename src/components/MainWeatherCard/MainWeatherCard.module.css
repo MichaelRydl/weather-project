@@ -12,6 +12,7 @@
   gap: 2rem;
   grid-column: 1;
   grid-row: 1;
+  min-width: 0;
 }
 
 .wrapper_forecast {
@@ -54,7 +55,7 @@
   position: absolute;
   top: 10px;
   right: 10px;
-  z-index: 1000;
+  z-index: 1;
 }
 
 .hourly_forecast_wrapper {
@@ -74,17 +75,6 @@
   padding: 0.5rem;
 }
 
-.current_forecast_item::before {
-  content: "";
-  width: 100%;
-  height: 2px;
-  background: lightgray;
-  position: absolute;
-  border-radius: 4px;
-  top: -0.5rem;
-  left: 0;
-}
-
 .hourly_forecast_item img {
   border: 2px solid lightblue;
   width: 4rem;
@@ -95,4 +85,116 @@
     var(--mantine-color-cyan-filled) 100%
   );
   border-radius: 50%;
+}
+
+/* Tablet / mobile: stack the hero card above the info panel and let the
+   sections size to their content instead of a fixed 500px row. */
+@mixin smaller-than $mantine-breakpoint-md {
+  .wrapper {
+    grid-template-rows: auto auto;
+    gap: 2rem;
+  }
+
+  .wrapper_main_info {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  /* The hero card's content lives in an absolutely-positioned overlay, so it
+     needs an explicit height once the grid no longer provides one. */
+  .main_weather_info {
+    min-height: 320px;
+  }
+}
+
+@mixin smaller-than $mantine-breakpoint-sm {
+  .main_weather_info .weather_icon {
+    width: 6rem;
+    height: 6rem;
+  }
+
+  /* Drop the icon's negative top bleed so it lines up with the city name and
+     temperature instead of hugging the top edge of the card. */
+  .main_weather_info .weather_icon_section {
+    margin-top: 0;
+  }
+
+  .main_weather_info .info {
+    padding-right: 0;
+  }
+}
+
+.empty_state {
+  width: 100%;
+  min-height: 60vh;
+  padding: 2rem;
+}
+
+.alerts_section {
+  margin-top: 1rem;
+}
+
+/* Details panel: a centered vertical list on desktop. */
+.info_panel {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Labels that only appear in the mobile single-column flow. */
+.mobile_only {
+  display: none;
+}
+
+@mixin smaller-than $mantine-breakpoint-md {
+  .wrapper {
+    gap: 1.5rem;
+  }
+
+  .mobile_only {
+    display: block;
+  }
+
+  /* Details panel becomes a grid of compact tiles instead of a tall list. */
+  .info_panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0.6rem;
+    align-items: stretch;
+  }
+
+  .info_divider {
+    display: none;
+  }
+
+  .last_update {
+    grid-column: 1 / -1;
+    text-align: center;
+  }
+
+  /* Turn the centered captions into left-aligned, app-style section headers. */
+  .section_label {
+    text-align: left !important;
+    padding: 1.25rem 0.25rem 0.6rem !important;
+    font-size: var(--mantine-font-size-sm) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Tighten the gaps above (heading) and below (next section) the strip. */
+  .hourly_forecast_wrapper {
+    margin: 0;
+    padding-top: 0.5rem;
+  }
+
+  /* 7-day cards fill the width in a 2-column grid instead of a centered wrap. */
+  .forecast_row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem !important;
+    width: 100%;
+  }
 }
