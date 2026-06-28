@@ -18,7 +18,6 @@ import {
   IconStar,
   IconStarFilled,
   IconAlertTriangle,
-  IconShieldCheck,
 } from "@tabler/icons-react";
 import { getTime, isToday } from "../../utils";
 import { wmoCodes } from "../../../wmo-codes";
@@ -426,12 +425,10 @@ const MainWeatherCard = () => {
   const weatherAlerts =
     !isLoading && weatherData ? getWeatherAlerts() : [];
 
-  const alertSection = !isLoading && weatherData && (
-    <div className={classes.alerts_section}>
-      <Text size="lg" c="gray" ta="center" className={classes.section_label}>
-        Weather alerts
-      </Text>
-      {weatherAlerts.length > 0 ? (
+  const alertSection = !isLoading &&
+    weatherData &&
+    weatherAlerts.length > 0 && (
+      <div className={classes.alerts_section}>
         <Flex direction="column" gap="sm">
           {weatherAlerts.map((alert, i) => (
             <Alert
@@ -446,19 +443,8 @@ const MainWeatherCard = () => {
             </Alert>
           ))}
         </Flex>
-      ) : (
-        <Alert
-          variant="light"
-          radius="md"
-          color="green"
-          title="No active alerts"
-          icon={<IconShieldCheck />}
-        >
-          There are no weather warnings for this location right now.
-        </Alert>
-      )}
-    </div>
-  );
+      </div>
+    );
 
   return (
     <div className={classes.wrapper}>
