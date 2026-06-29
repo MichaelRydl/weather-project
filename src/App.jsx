@@ -45,7 +45,10 @@ const App = () => {
       // Denied, unavailable or no prompt (e.g. permission already decided):
       // there's nothing to detect, so the UI falls back to the search prompt.
       (error) => console.error("Geolocation error:", error.message),
-      { timeout: 10000 }
+      // Network-based accuracy is plenty for a city lookup and avoids waiting on
+      // a slow GPS fix; allowing a recent cached position makes detection far
+      // more reliable on mobile (notably iOS Safari).
+      { enableHighAccuracy: false, timeout: 20000, maximumAge: 600000 }
     );
   }, [location, setLocation]);
 
